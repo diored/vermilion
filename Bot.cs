@@ -8,22 +8,23 @@ using Telegram.Bot.Types.Enums;
 
 namespace DioRed.Vermilion;
 
-public class Bot : IUpdateHandler
+public abstract class Bot : IUpdateHandler
 {
-    private readonly BotConfiguration _configuration;
     private readonly ConcurrentDictionary<long, IChatClient> _chatClients = new();
     private readonly HashSet<ILogger> _loggers = new();
 
-    public Bot(BotConfiguration configuration, CancellationToken cancellationToken)
+    protected Bot(BotConfiguration configuration, CancellationToken cancellationToken)
     {
-        _configuration = configuration;
-        BotClient = new TelegramBotClient(configuration.Token);
+        BotClient = new TelegramBotClient(configuration.BotToken);
         CancellationToken = cancellationToken;
+        Broadcaster = new Broadcaster(this);
     }
 
     public ITelegramBotClient BotClient { get; }
 
     protected CancellationToken CancellationToken { get; private set; }
+
+    protected Broadcaster Broadcaster { get; }
 
     public void AddLogger(ILogger logger)
     {
@@ -63,6 +64,11 @@ public class Bot : IUpdateHandler
         }
     }
 
+    public async Task Broadcast(Func<IChatWriter, Task> action)
+    {
+        await Broadcast((chat, token) => action(new ChatWriter(BotClient, chat.Chat.Id)));
+    }
+
     public void LogError(string message)
     {
         foreach (var logger in _loggers)
@@ -90,7 +96,8 @@ public class Bot : IUpdateHandler
             return chatClient;
         }
 
-        chatClient = _configuration.ChatClientConstructor(chat);
+        chatClient = CreateChatClient(chat);
+
         if (_chatClients.TryAdd(chat.Id, chatClient))
         {
             OnChatClientAdded(chat);
@@ -102,6 +109,8 @@ public class Bot : IUpdateHandler
 
         return chatClient;
     }
+
+    protected abstract IChatClient CreateChatClient(Chat chat);
 
     async Task IUpdateHandler.HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {

@@ -2,4 +2,4 @@
 
 namespace DioRed.Vermilion;
 
-public record MessageContext(ITelegramBotClient BotClient, IChatClient ChatClient, CancellationToken CancellationToken);
+public record MessageContext(ITelegramBotClient BotClient, IChatClient ChatClient, Broadcaster Broadcaster, CancellationToken CancellationToken);

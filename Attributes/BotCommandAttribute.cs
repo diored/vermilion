@@ -2,16 +2,32 @@
 
 namespace DioRed.Vermilion.Attributes;
 
-[AttributeUsage(AttributeTargets.Method)]
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public class BotCommandAttribute : Attribute
 {
-    public BotCommandAttribute(string pattern, RegexOptions options = RegexOptions.None)
+    public BotCommandAttribute(string command, BotCommandOptions options = BotCommandOptions.EqualsTo)
     {
-        Pattern = pattern;
-        Regex = new Regex(Pattern, options);
-    }
+        RegexOptions regexOptions = RegexOptions.Multiline;
+        
+        if (options.HasFlag(BotCommandOptions.CaseInsensitive))
+        {
+            regexOptions |= RegexOptions.IgnoreCase;
+        }
 
-    public string Pattern { get; }
+        options &= ~BotCommandOptions.CaseInsensitive;
+
+        string escaped = Regex.Escape(command);
+
+        string pattern = options switch
+        {
+            BotCommandOptions.EqualsTo => $"^{escaped}$",
+            BotCommandOptions.StartsWith => $"^{escaped} (.+)$",
+            BotCommandOptions.Regex => command,
+            _ => throw new ArgumentException("Unsupported options: " + options)
+        };
+
+        Regex = new Regex(pattern, regexOptions);
+    }
 
     public Regex Regex { get; }
 }

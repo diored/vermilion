@@ -34,6 +34,13 @@ public class ChatWriter : IChatWriter
         await Execute(() => _botClient.SendPhotoAsync(_chatId, photo));
     }
 
+    public async Task SendPhotoAsync(Stream stream)
+    {
+        InputOnlineFile photo = new(stream);
+
+        await Execute(() => _botClient.SendPhotoAsync(_chatId, photo));
+    }
+
     private async Task Execute(Func<Task> action)
     {
         try

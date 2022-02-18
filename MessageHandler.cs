@@ -16,15 +16,15 @@ abstract public class MessageHandler
 
         _commands = new List<BotCommand>(
             GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .Select(method => (attr: method.GetCustomAttribute<BotCommandAttribute>(), method))
+            .SelectMany(method => method.GetCustomAttributes<BotCommandAttribute>().Select(attr => (attr, method)))
             .Where(x => x.attr is not null)
             .Select(x => new BotCommand
             {
-                Regex = new Regex(x.attr!.Pattern),
+                Regex = x.attr!.Regex,
                 AdminOnly = x.method.GetCustomAttribute<AdminOnlyAttribute>() is not null,
-                Handler = new Func<Task>(() =>
+                Handler = new Func<string[]?, Task>(args =>
                 {
-                    return x.method.Invoke(this, null) switch
+                    return x.method.Invoke(this, args) switch
                     {
                         null => Task.CompletedTask,
                         Task task => task,
@@ -38,16 +38,23 @@ abstract public class MessageHandler
     public MessageContext MessageContext { get; }
     public IChatWriter ChatWriter { get; }
 
-    public async virtual Task HandleAsync(string message)
+    public async virtual Task HandleAsync(string message, bool isAdmin = false)
     {
         var command = _commands
-            .Where(h => h.Regex.IsMatch(message))
+            .Where(cmd => isAdmin || !cmd.AdminOnly)
+            .Select(cmd => (cmd, match: cmd.Regex.Match(message)))
+            .Where(x => x.match.Success)
             .Take(1)
             .ToList();
 
         if (command.Any())
         {
-            await command.First().Handler();
+            (BotCommand cmd, Match match) = command.First();
+            var args = match.Groups.Count > 1
+                ? match.Groups.AsEnumerable<Group>().Skip(1).Select(g => g.Value).ToArray()
+                : null;
+
+            await cmd.Handler(args);
         }
     }
 }
