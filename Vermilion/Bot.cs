@@ -13,6 +13,8 @@ public abstract class Bot : IUpdateHandler
     private readonly ConcurrentDictionary<long, IChatClient> _chatClients = new();
     private readonly HashSet<ILogger> _loggers = new();
 
+    protected internal const long BotSenderId = -1;
+
     protected Bot(BotConfiguration configuration, CancellationToken cancellationToken)
     {
         BotClient = new TelegramBotClient(configuration.BotToken);

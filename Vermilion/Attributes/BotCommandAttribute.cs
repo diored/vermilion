@@ -6,9 +6,16 @@ namespace DioRed.Vermilion.Attributes;
 public class BotCommandAttribute : Attribute
 {
     public BotCommandAttribute(string command, BotCommandOptions options = BotCommandOptions.EqualsTo)
+        : this(UserRole.AnyUser, command, options)
     {
+    }
+
+    public BotCommandAttribute(UserRole role, string command, BotCommandOptions options = BotCommandOptions.EqualsTo)
+    {
+        Role = role;
+
         RegexOptions regexOptions = RegexOptions.Multiline;
-        
+
         if (options.HasFlag(BotCommandOptions.CaseInsensitive))
         {
             regexOptions |= RegexOptions.IgnoreCase;
@@ -30,4 +37,5 @@ public class BotCommandAttribute : Attribute
     }
 
     public Regex Regex { get; }
+    public UserRole Role { get; }
 }

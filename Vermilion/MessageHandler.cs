@@ -20,8 +20,8 @@ abstract public class MessageHandler
             .Where(x => x.attr is not null)
             .Select(x => new BotCommand
             {
-                Regex = x.attr!.Regex,
-                AdminOnly = x.method.GetCustomAttribute<AdminOnlyAttribute>() is not null,
+                Regex = x.attr.Regex,
+                Role = x.attr.Role,
                 Handler = new Func<string[]?, Task>(args =>
                 {
                     return x.method.Invoke(this, args) switch
@@ -38,10 +38,10 @@ abstract public class MessageHandler
     public MessageContext MessageContext { get; }
     public IChatWriter ChatWriter { get; }
 
-    public async virtual Task HandleAsync(string message, bool isAdmin = false)
+    public async virtual Task HandleAsync(string message)
     {
         var command = _commands
-            .Where(cmd => isAdmin || !cmd.AdminOnly)
+            .Where(cmd => MessageContext.Role.HasFlag(cmd.Role))
             .Select(cmd => (cmd, match: cmd.Regex.Match(message)))
             .Where(x => x.match.Success)
             .Take(1)
@@ -54,7 +54,19 @@ abstract public class MessageHandler
                 ? match.Groups.AsEnumerable<Group>().Skip(1).Select(g => g.Value).ToArray()
                 : null;
 
-            await cmd.Handler(args);
+            try
+            {
+                await cmd.Handler(args);
+            }
+            catch (Exception ex)
+            {
+                await OnExceptionAsync(ex);
+            }
         }
+    }
+
+    public virtual async Task OnExceptionAsync(Exception ex)
+    {
+        await ChatWriter.SendTextAsync($"Error occured: {ex.Message}");
     }
 }
