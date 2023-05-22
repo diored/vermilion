@@ -1,6 +1,6 @@
 ﻿using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InputFiles;
 
 namespace DioRed.Vermilion;
 
@@ -24,19 +24,19 @@ public class ChatWriter : IChatWriter
 
     public async Task SendHtmlAsync(string html)
     {
-        await Execute(() => _botClient.SendTextMessageAsync(_chatId, html, ParseMode.Html));
+        await Execute(() => _botClient.SendTextMessageAsync(_chatId, html, parseMode: ParseMode.Html));
     }
 
     public async Task SendPhotoAsync(string url)
     {
-        InputOnlineFile photo = new(url);
+        InputFile photo = InputFile.FromUri(url);
 
         await Execute(() => _botClient.SendPhotoAsync(_chatId, photo));
     }
 
     public async Task SendPhotoAsync(Stream stream)
     {
-        InputOnlineFile photo = new(stream);
+        InputFile photo = InputFile.FromStream(stream);
 
         await Execute(() => _botClient.SendPhotoAsync(_chatId, photo));
     }

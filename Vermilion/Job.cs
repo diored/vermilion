@@ -4,34 +4,35 @@ public class Job
 {
     private readonly CancellationTokenSource _cancellation;
 
-    private Job()
+    private Job(string id)
     {
+        Id = id;
         _cancellation = new CancellationTokenSource();
         Active = true;
     }
 
-    public string Id { get; } = Guid.NewGuid().ToString()[^12..];
+    public string Id { get; }
     public bool Active { get; private set; }
 
-    public static Job SetupOneTime(Bot bot, Func<Task> action, DateTime dateTime)
+    public static Job SetupOneTime(ILogger logger, Func<Task> action, DateTime dateTime, string? id = default)
     {
         TimeSpan interval = dateTime - DateTime.UtcNow;
         if (interval <= TimeSpan.Zero)
         {
-            throw new ArgumentOutOfRangeException("Cannot schedule to the past");
+            throw new ArgumentOutOfRangeException(nameof(dateTime), "Cannot schedule to the past");
         }
 
-        Job job = new();
+        Job job = new(id ?? GenerateId());
 
-        bot.LogInfo($"One-time job #{job.Id} is planned on {DateTime.UtcNow + interval} (in {interval}).");
+        logger.LogInfo($"One-time job #{job.Id} is planned on {DateTime.UtcNow + interval} (in {interval}).");
 
         _ = Task.Run(async () =>
         {
             await Task.Delay(interval, job._cancellation.Token);
 
-            bot.LogInfo($"Job #{job.Id} started.");
+            logger.LogInfo($"Job #{job.Id} started.");
             await action();
-            bot.LogInfo($"Job #{job.Id} finished.");
+            logger.LogInfo($"Job #{job.Id} finished.");
 
             job.Active = false;
         }, job._cancellation.Token);
@@ -39,7 +40,7 @@ public class Job
         return job;
     }
 
-    public static Job SetupDaily(Bot bot, Func<Task> action, TimeSpan time)
+    public static Job SetupDaily(ILogger logger, Func<Task> action, TimeSpan time, string? id = default)
     {
         var firstOccurrence = DateTime.UtcNow.Date + time;
         if (firstOccurrence <= DateTime.UtcNow)
@@ -47,10 +48,10 @@ public class Job
             firstOccurrence += TimeSpan.FromDays(1);
         }
 
-        return SetupRepeat(bot, action, TimeSpan.FromDays(1), firstOccurrence);
+        return SetupRepeat(logger, action, TimeSpan.FromDays(1), firstOccurrence, id);
     }
 
-    public static Job SetupRepeat(Bot bot, Func<Task> action, TimeSpan repeatInterval, DateTime? firstOccurrence = default)
+    public static Job SetupRepeat(ILogger logger, Func<Task> action, TimeSpan repeatInterval, DateTime? firstOccurrence = default, string? id = default)
     {
         TimeSpan interval;
 
@@ -58,7 +59,7 @@ public class Job
         {
             if (firstOccurrence < DateTime.UtcNow)
             {
-                throw new ArgumentOutOfRangeException($"Cannot schedule to the past: {firstOccurrence} is before {DateTime.UtcNow}");
+                throw new ArgumentOutOfRangeException(nameof(firstOccurrence), $"Cannot schedule to the past: {firstOccurrence} is before {DateTime.UtcNow}");
             }
 
             interval = firstOccurrence.Value - DateTime.UtcNow;
@@ -68,20 +69,20 @@ public class Job
             interval = TimeSpan.Zero;
         }
 
-        Job job = new();
+        Job job = new(id ?? GenerateId());
 
         _ = Task.Run(async () =>
         {
             while (true)
             {
-                bot.LogInfo($"Repeatable job #{job.Id} is planned on {DateTime.UtcNow + interval} (in {interval})");
+                logger.LogInfo($"Repeatable job #{job.Id} is planned on {DateTime.UtcNow + interval} (in {interval})");
 
-                await Task.Delay(interval, job._cancellation.Token);                
-                
-                bot.LogInfo($"Job #{job.Id} started.");
+                await Task.Delay(interval, job._cancellation.Token);
+
+                logger.LogInfo($"Job #{job.Id} started.");
                 await action();
-                bot.LogInfo($"Job #{job.Id} finished.");
-                
+                logger.LogInfo($"Job #{job.Id} finished.");
+
                 interval = repeatInterval;
             }
 
@@ -94,5 +95,10 @@ public class Job
     {
         _cancellation.Cancel();
         Active = false;
+    }
+
+    private static string GenerateId()
+    {
+        return Guid.NewGuid().ToString()[^12..];
     }
 }

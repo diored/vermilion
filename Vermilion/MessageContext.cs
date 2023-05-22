@@ -7,4 +7,5 @@ public record MessageContext(
     IChatClient ChatClient,
     UserRole Role,
     Broadcaster Broadcaster,
+    int MessageId,
     CancellationToken CancellationToken);

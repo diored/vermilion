@@ -1,41 +1,21 @@
-﻿using System.Text.RegularExpressions;
-
-namespace DioRed.Vermilion.Attributes;
+﻿namespace DioRed.Vermilion.Attributes;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public class BotCommandAttribute : Attribute
 {
-    public BotCommandAttribute(string command, BotCommandOptions options = BotCommandOptions.EqualsTo)
+    public BotCommandAttribute(string command, BotCommandOptions options = BotCommandOptions.PlainText)
         : this(UserRole.AnyUser, command, options)
     {
     }
 
-    public BotCommandAttribute(UserRole role, string command, BotCommandOptions options = BotCommandOptions.EqualsTo)
+    public BotCommandAttribute(UserRole userRole, string command, BotCommandOptions options = BotCommandOptions.PlainText)
     {
-        Role = role;
-
-        RegexOptions regexOptions = RegexOptions.Multiline;
-
-        if (options.HasFlag(BotCommandOptions.CaseInsensitive))
-        {
-            regexOptions |= RegexOptions.IgnoreCase;
-        }
-
-        options &= ~BotCommandOptions.CaseInsensitive;
-
-        string escaped = Regex.Escape(command);
-
-        string pattern = options switch
-        {
-            BotCommandOptions.EqualsTo => $"^{escaped}$",
-            BotCommandOptions.StartsWith => $"^{escaped} (.+)$",
-            BotCommandOptions.Regex => command,
-            _ => throw new ArgumentException("Unsupported options: " + options)
-        };
-
-        Regex = new Regex(pattern, regexOptions);
+        UserRole = userRole;
+        Command = command;
+        Options = options;
     }
 
-    public Regex Regex { get; }
-    public UserRole Role { get; }
+    public string Command { get; }
+    public BotCommandOptions Options { get; }
+    public UserRole UserRole { get; }
 }

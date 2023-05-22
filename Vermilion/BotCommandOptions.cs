@@ -3,8 +3,7 @@
 [Flags]
 public enum BotCommandOptions
 {
-    EqualsTo = 0,
-    StartsWith = 1,
+    PlainText = 0,
     Regex = 2,
     CaseInsensitive = 64
 }

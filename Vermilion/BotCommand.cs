@@ -6,5 +6,5 @@ public class BotCommand
 {
     public Regex Regex { get; init; } = default!;
     public UserRole Role { get; init; }
-    public Func<string[]?, Task> Handler { get; init; } = default!;
+    public Func<object[]?, Task> Handler { get; init; } = default!;
 }

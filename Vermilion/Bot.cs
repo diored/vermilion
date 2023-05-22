@@ -2,7 +2,7 @@
 
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
-using Telegram.Bot.Extensions.Polling;
+using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -11,32 +11,24 @@ namespace DioRed.Vermilion;
 public abstract class Bot : IUpdateHandler
 {
     private readonly ConcurrentDictionary<long, IChatClient> _chatClients = new();
-    private readonly HashSet<ILogger> _loggers = new();
 
     protected internal const long BotSenderId = -1;
 
     protected Bot(BotConfiguration configuration, CancellationToken cancellationToken)
     {
         BotClient = new TelegramBotClient(configuration.BotToken);
+        Logger = new MultiLogger();
         CancellationToken = cancellationToken;
         Broadcaster = new Broadcaster(this);
     }
 
     public ITelegramBotClient BotClient { get; }
 
+    public MultiLogger Logger { get; }
+
     protected CancellationToken CancellationToken { get; private set; }
 
     protected Broadcaster Broadcaster { get; }
-
-    public void AddLogger(ILogger logger)
-    {
-        _loggers.Add(logger);
-    }
-
-    public void RemoveLogger(ILogger logger)
-    {
-        _loggers.Remove(logger);
-    }
 
     public async Task ConnectToChatAsync(long chatId)
     {
@@ -47,7 +39,7 @@ public abstract class Bot : IUpdateHandler
         }
         catch (Exception ex)
         {
-            LogError($"Cannot connect to chat #{chatId}: {ex.Message}");
+            Logger.LogError($"Cannot connect to chat #{chatId}: {ex.Message}");
 
             throw;
         }
@@ -69,22 +61,6 @@ public abstract class Bot : IUpdateHandler
     public async Task Broadcast(Func<IChatWriter, Task> action)
     {
         await Broadcast((chat, token) => action(new ChatWriter(BotClient, chat.Chat.Id)));
-    }
-
-    public void LogError(string message)
-    {
-        foreach (var logger in _loggers)
-        {
-            logger.LogError(message);
-        }
-    }
-
-    public void LogInfo(string message)
-    {
-        foreach (var logger in _loggers)
-        {
-            logger.LogInfo(message);
-        }
     }
 
     protected virtual void OnChatClientAdded(Chat chat)
@@ -136,7 +112,7 @@ public abstract class Bot : IUpdateHandler
         }
     }
 
-    Task IUpdateHandler.HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+    Task IUpdateHandler.HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
     {
         string message = exception switch
         {
@@ -146,7 +122,7 @@ public abstract class Bot : IUpdateHandler
             _ => $"Error: {exception}"
         };
 
-        LogError(message);
+        Logger.LogError(message);
 
         return Task.CompletedTask;
     }
