@@ -4,24 +4,70 @@ using System.Text.RegularExpressions;
 
 using DioRed.Vermilion.Attributes;
 
-using Telegram.Bot;
-
 namespace DioRed.Vermilion;
 
-abstract public class MessageHandler
+public abstract class MessageHandler<TMessageContext>
+    where TMessageContext : IMessageContext
 {
+    private static readonly Dictionary<Type, ICollection<BotCommand>> _commandCache = new();
+
     private readonly ICollection<BotCommand> _commands;
 
-    protected MessageHandler(MessageContext messageContext)
+    protected MessageHandler(TMessageContext messageContext)
     {
         MessageContext = messageContext;
-        ChatWriter = new ChatWriter(messageContext.BotClient, messageContext.ChatClient.Chat.Id);
+        ChatWriter = messageContext.GetChatWriter();
+        Type type = GetType();
 
-        _commands = GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .SelectMany(method => method.GetCustomAttributes<BotCommandAttribute>().Select(attr => (attr, method)))
-            .Where(x => x.attr is not null)
-            .Select(x => CreateCommand(x.attr, x.method))
+        if (_commandCache.TryGetValue(type, out var commands))
+        {
+            _commands = commands;
+        }
+        else
+        {
+            _commands = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                .SelectMany(method => method.GetCustomAttributes<BotCommandAttribute>().Select(attr => (attr, method)))
+                .Where(x => x.attr is not null)
+                .Select(x => CreateCommand(x.attr, x.method))
+                .ToList();
+
+            _commandCache.Add(type, _commands);
+        }
+    }
+
+    public TMessageContext MessageContext { get; }
+    public IChatWriter ChatWriter { get; }
+
+    public async virtual Task HandleAsync(string message)
+    {
+        var command = _commands
+            .Where(cmd => MessageContext.Role.HasFlag(cmd.Role))
+            .Select(cmd => (cmd, match: cmd.Regex.Match(message)))
+            .Where(x => x.match.Success)
+            .Take(1)
             .ToList();
+
+        if (command.Any())
+        {
+            (BotCommand cmd, Match match) = command.First();
+            var args = match.Groups.Count > 1
+                ? match.Groups.AsEnumerable<Group>().Skip(1).Select(g => g.Value).ToArray()
+                : null;
+
+            try
+            {
+                await cmd.Handler(args);
+            }
+            catch (Exception ex)
+            {
+                await OnExceptionAsync(ex);
+            }
+        }
+    }
+
+    public virtual async Task OnExceptionAsync(Exception ex)
+    {
+        await ChatWriter.SendTextAsync($"Error occurred: {ex.Message}");
     }
 
     private BotCommand CreateCommand(BotCommandAttribute attr, MethodInfo method)
@@ -56,7 +102,7 @@ abstract public class MessageHandler
             builder.Append('$');
         }
 
-        var regex = new Regex(builder.ToString(), regexOptions);
+        Regex regex = new(builder.ToString(), regexOptions);
 
         return new BotCommand
         {
@@ -98,45 +144,5 @@ abstract public class MessageHandler
         //}
 
         return @".+";
-    }
-
-    public MessageContext MessageContext { get; }
-    public IChatWriter ChatWriter { get; }
-
-    public async virtual Task HandleAsync(string message)
-    {
-        var command = _commands
-            .Where(cmd => MessageContext.Role.HasFlag(cmd.Role))
-            .Select(cmd => (cmd, match: cmd.Regex.Match(message)))
-            .Where(x => x.match.Success)
-            .Take(1)
-            .ToList();
-
-        if (command.Any())
-        {
-            (BotCommand cmd, Match match) = command.First();
-            var args = match.Groups.Count > 1
-                ? match.Groups.AsEnumerable<Group>().Skip(1).Select(g => g.Value).ToArray()
-                : null;
-
-            try
-            {
-                await cmd.Handler(args);
-            }
-            catch (Exception ex)
-            {
-                await OnExceptionAsync(ex);
-            }
-        }
-    }
-
-    public virtual async Task OnExceptionAsync(Exception ex)
-    {
-        await ChatWriter.SendTextAsync($"Error occurred: {ex.Message}");
-    }
-
-    protected async Task RemoveMessage()
-    {
-        await MessageContext.BotClient.DeleteMessageAsync(MessageContext.ChatClient.Chat.Id, MessageContext.MessageId, MessageContext.CancellationToken);
     }
 }

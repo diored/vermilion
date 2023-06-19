@@ -4,7 +4,7 @@
 public class BotCommandAttribute : Attribute
 {
     public BotCommandAttribute(string command, BotCommandOptions options = BotCommandOptions.PlainText)
-        : this(UserRole.AnyUser, command, options)
+        : this(UserRole.Member, command, options)
     {
     }
 

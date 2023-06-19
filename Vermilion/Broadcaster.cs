@@ -2,14 +2,12 @@
 
 public class Broadcaster : IChatWriter
 {
-    private readonly Bot _bot;
+    private readonly VermilionBot _bot;
 
-    public Broadcaster(Bot bot)
+    public Broadcaster(VermilionBot bot)
     {
         _bot = bot;
     }
-
-    public event Action<Exception>? OnException;
 
     public async Task SendHtmlAsync(string html)
     {
