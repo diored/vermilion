@@ -6,7 +6,7 @@ using DioRed.Vermilion.Attributes;
 
 namespace DioRed.Vermilion;
 
-public abstract class MessageHandler<TMessageContext>
+public abstract class MessageHandler<TMessageContext> : IMessageHandler
     where TMessageContext : IMessageContext
 {
     private static readonly Dictionary<Type, ICollection<BotCommand>> _commandCache = new();
@@ -35,8 +35,8 @@ public abstract class MessageHandler<TMessageContext>
         }
     }
 
-    public TMessageContext MessageContext { get; }
-    public IChatWriter ChatWriter { get; }
+    protected TMessageContext MessageContext { get; }
+    protected IChatWriter ChatWriter { get; }
 
     public async virtual Task HandleAsync(string message)
     {
@@ -65,7 +65,7 @@ public abstract class MessageHandler<TMessageContext>
         }
     }
 
-    public virtual async Task OnExceptionAsync(Exception ex)
+    protected virtual async Task OnExceptionAsync(Exception ex)
     {
         await ChatWriter.SendTextAsync($"Error occurred: {ex.Message}");
     }
