@@ -26,6 +26,7 @@ public class VermilionManager
 
     public MultiLogger Logger { get; }
     public IChatManager Chats { get; }
+    public bool UseCommandsCache => _configuration.UseCommandsCache;
 
     public VermilionManager AddBot(VermilionBot bot)
     {

@@ -8,28 +8,30 @@ public class AttributeBasedMessageHandler : IMessageHandler
 {
     private static readonly Dictionary<Type, ICollection<BotCommand>> _commandCache = new();
 
-    private readonly ICollection<BotCommand> _commands;
+    private readonly ICollection<BotCommand>? _commands;
 
     protected AttributeBasedMessageHandler(MessageContext messageContext)
     {
         MessageContext = messageContext;
         ChatWriter = messageContext.Bot.Manager.GetChatWriter(messageContext.ChatId);
 
-        Type type = GetType();
-
-        if (_commandCache.TryGetValue(type, out var commands))
+        if (messageContext.Bot.Manager.UseCommandsCache)
         {
-            _commands = commands;
+            if (_commandCache.TryGetValue(GetType(), out var commands))
+            {
+                _commands = commands;
+            }
+            else
+            {
+                List<BotCommand> botCommands = LoadCommandsFromCurrentClass();
+                _commands = botCommands;
+
+                _commandCache.Add(GetType(), _commands);
+            }
         }
         else
         {
-            _commands = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                .SelectMany(method => method.GetCustomAttributes<BotCommandAttribute>().Select(attr => (attr, method)))
-                .Where(x => x.attr is not null)
-                .Select(x => CreateCommand(x.attr, x.method))
-                .ToList();
-
-            _commandCache.Add(type, _commands);
+            _commands = null;
         }
     }
 
@@ -38,7 +40,9 @@ public class AttributeBasedMessageHandler : IMessageHandler
 
     public async virtual Task HandleAsync(string message)
     {
-        var command = _commands
+        var commands = _commands ?? LoadCommandsFromCurrentClass();
+
+        var command = commands
             .Where(cmd => MessageContext.UserRole.HasFlag(cmd.Role))
             .Select(cmd => (cmd, match: cmd.Regex.Match(message)))
             .Where(x => x.match.Success)
@@ -66,6 +70,15 @@ public class AttributeBasedMessageHandler : IMessageHandler
     protected virtual async Task OnExceptionAsync(Exception ex)
     {
         await ChatWriter.SendTextAsync($"Error occurred: {ex.Message}");
+    }
+
+    private List<BotCommand> LoadCommandsFromCurrentClass()
+    {
+        return GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .SelectMany(method => method.GetCustomAttributes<BotCommandAttribute>().Select(attr => (attr, method)))
+            .Where(x => x.attr is not null)
+            .Select(x => CreateCommand(x.attr, x.method))
+            .ToList();
     }
 
     private BotCommand CreateCommand(BotCommandAttribute attr, MethodInfo method)
