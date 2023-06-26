@@ -1,4 +1,4 @@
-﻿namespace DioRed.Vermilion;
+﻿namespace DioRed.Vermilion.Handlers;
 
 [Flags]
 public enum BotCommandOptions

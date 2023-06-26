@@ -2,30 +2,30 @@
 
 public class Broadcaster : IChatWriter
 {
-    private readonly VermilionBot _bot;
+    private readonly VermilionManager _botManager;
 
-    public Broadcaster(VermilionBot bot)
+    public Broadcaster(VermilionManager botManager)
     {
-        _bot = bot;
+        _botManager = botManager;
     }
 
     public async Task SendHtmlAsync(string html)
     {
-        await _bot.Broadcast(writer => writer.SendHtmlAsync(html));
+        await _botManager.Broadcast(writer => writer.SendHtmlAsync(html));
     }
 
     public async Task SendPhotoAsync(string url)
     {
-        await _bot.Broadcast(writer => writer.SendPhotoAsync(url));
+        await _botManager.Broadcast(writer => writer.SendPhotoAsync(url));
     }
 
     public async Task SendPhotoAsync(Stream stream)
     {
-        await _bot.Broadcast(writer => writer.SendPhotoAsync(stream));
+        await _botManager.Broadcast(writer => writer.SendPhotoAsync(stream));
     }
 
     public async Task SendTextAsync(string text)
     {
-        await _bot.Broadcast(writer => writer.SendTextAsync(text));
+        await _botManager.Broadcast(writer => writer.SendTextAsync(text));
     }
 }

@@ -5,11 +5,11 @@ using Telegram.Bot.Types;
 
 namespace DioRed.Vermilion.Telegram;
 
-public class UpdateHandler : IUpdateHandler
+internal class UpdateHandler : IUpdateHandler
 {
-    private readonly VermilionTelegramBot _bot;
+    private readonly TelegramVermilionBot _bot;
 
-    public UpdateHandler(VermilionTelegramBot bot)
+    public UpdateHandler(TelegramVermilionBot bot)
     {
         _bot = bot;
     }
@@ -24,7 +24,7 @@ public class UpdateHandler : IUpdateHandler
             _ => $"Error: {exception}"
         };
 
-        _bot.Logger.LogError(message);
+        _bot.Manager.Logger.LogError(message);
 
         return Task.CompletedTask;
     }

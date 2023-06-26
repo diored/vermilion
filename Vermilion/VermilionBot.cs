@@ -1,99 +1,47 @@
-﻿using System.Collections.Concurrent;
-
-namespace DioRed.Vermilion;
+﻿namespace DioRed.Vermilion;
 
 public abstract class VermilionBot
 {
-    private readonly ConcurrentDictionary<ChatId, IChatClient> _chatClients = new();
+    private VermilionManager? _botManager;
 
-    private readonly IChatStorage _chatStorage;
-    private readonly CancellationTokenSource _cts;
+    protected bool NewChatsDetection { get; set; } = true;
 
-    private bool _newChatsDetection;
-
-    protected VermilionBot(IChatStorage chatStorage)
+    public VermilionManager Manager
     {
-        _cts = new CancellationTokenSource();
-        _chatStorage = chatStorage;
-
-        _newChatsDetection = true;
-
-        Logger = new MultiLogger();
-        Logger.Loggers.Add(new ConsoleLogger());
-    }
-
-    public MultiLogger Logger { get; }
-
-    protected CancellationToken CancellationToken => _cts.Token;
-
-    public async Task Broadcast(Func<IChatClient, CancellationToken, Task> action)
-    {
-        foreach (var chatClient in _chatClients.Values)
+        get
         {
-            await action(chatClient, _cts.Token);
+            return _botManager
+                ?? throw new NullReferenceException("Bot manager should be set before any bot usage");
+        }
+        set
+        {
+            _botManager = value;
         }
     }
 
-    public async Task Broadcast(Func<IChatWriter, Task> action)
+    protected ICollection<ChatId> GetAllChats()
     {
-        await Broadcast((chat, token) => action(GetChatWriter(chat.ChatId)));
+        return Manager.Chats.GetStoredChats(System);
     }
 
-    public void Start()
+    protected ChatClient GetChatClient(ChatId chatId, Func<ChatClient> createFunc, Func<string> getTitleFunc)
     {
-        ReconnectToChats();
-        StartInternal();
+        ChatClient? chatClient = Manager.Chats.GetClient(chatId);
+
+        if (chatClient is null)
+        {
+            ChatClient newChatClient = createFunc();
+
+            chatClient = NewChatsDetection
+                ? Manager.Chats.AddAndStoreChatClient(chatId, newChatClient, getTitleFunc())
+                : Manager.Chats.AddChatClient(chatId, newChatClient);
+        }
+
+        return chatClient;
     }
 
-    public void Stop()
-    {
-        _cts.Cancel();
-    }
-
-    protected TChatClient GetOrCreateChatClient<TChatClient>(ChatId chatId, Func<TChatClient> createChatClientFunc, Func<string> getChatTitleFunc)
-        where TChatClient : IChatClient
-    {
-        if (_chatClients.TryGetValue(chatId, out IChatClient? chatClient))
-        {
-            return (TChatClient)chatClient;
-        }
-
-        TChatClient newChatClient = createChatClientFunc();
-
-        if (_chatClients.TryAdd(chatId, newChatClient))
-        {
-            if (_newChatsDetection)
-            {
-                _chatStorage.AddChat(chatId, getChatTitleFunc());
-            }
-
-            return newChatClient;
-        }
-        else
-        {
-            return (TChatClient)_chatClients[chatId];
-        }
-    }
-
-    private void ReconnectToChats()
-    {
-        ICollection<ChatId> chatIds = _chatStorage.GetChats();
-
-        try
-        {
-            _newChatsDetection = false;
-            foreach (ChatId chatId in chatIds)
-            {
-                ReconnectToChat(chatId);
-            }
-        }
-        finally
-        {
-            _newChatsDetection = true;
-        }
-    }
-
-    protected abstract void StartInternal();
-    protected abstract void ReconnectToChat(ChatId chatId);
+    protected internal abstract BotSystem System { get; }
+    protected internal abstract Task StartAsync(CancellationToken cancellationToken);
     protected internal abstract IChatWriter GetChatWriter(ChatId chatId);
+    protected internal abstract Task<UserRole> GetUserRoleAsync(long userId, ChatId chatId, CancellationToken cancellationToken);
 }

@@ -2,21 +2,19 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-using DioRed.Vermilion.Attributes;
+namespace DioRed.Vermilion.Handlers;
 
-namespace DioRed.Vermilion;
-
-public abstract class MessageHandler<TMessageContext> : IMessageHandler
-    where TMessageContext : IMessageContext
+public class AttributeBasedMessageHandler : IMessageHandler
 {
     private static readonly Dictionary<Type, ICollection<BotCommand>> _commandCache = new();
 
     private readonly ICollection<BotCommand> _commands;
 
-    protected MessageHandler(TMessageContext messageContext)
+    protected AttributeBasedMessageHandler(MessageContext messageContext)
     {
         MessageContext = messageContext;
-        ChatWriter = messageContext.GetChatWriter();
+        ChatWriter = messageContext.Bot.Manager.GetChatWriter(messageContext.ChatId);
+
         Type type = GetType();
 
         if (_commandCache.TryGetValue(type, out var commands))
@@ -35,13 +33,13 @@ public abstract class MessageHandler<TMessageContext> : IMessageHandler
         }
     }
 
-    protected TMessageContext MessageContext { get; }
+    protected MessageContext MessageContext { get; }
     protected IChatWriter ChatWriter { get; }
 
     public async virtual Task HandleAsync(string message)
     {
         var command = _commands
-            .Where(cmd => MessageContext.Role.HasFlag(cmd.Role))
+            .Where(cmd => MessageContext.UserRole.HasFlag(cmd.Role))
             .Select(cmd => (cmd, match: cmd.Regex.Match(message)))
             .Where(x => x.match.Success)
             .Take(1)

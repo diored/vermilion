@@ -1,4 +1,4 @@
-﻿namespace DioRed.Vermilion.Attributes;
+﻿namespace DioRed.Vermilion.Handlers;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public class BotCommandAttribute : Attribute

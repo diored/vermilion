@@ -1,17 +1,12 @@
 ﻿namespace DioRed.Vermilion;
 
-public abstract class MessageContext<TChatClient, TBot> : IMessageContext
-    where TChatClient : IChatClient
-    where TBot : VermilionBot
+public class MessageContext
 {
+    public required ChatId ChatId { get; init; }
     public required int MessageId { get; init; }
-    public required UserRole Role { get; init; }
-    public required TChatClient ChatClient { get; init; }
-    public required TBot Bot { get; init; }
-    public required CancellationToken CancellationToken { get; init; }
+    public required UserRole UserRole { get; init; }
+    public required VermilionBot Bot { get; init; }
 
-    public IChatWriter GetChatWriter()
-    {
-        return Bot.GetChatWriter(ChatClient.ChatId);
-    }
+    public ChatClient ChatClient => Bot.Manager.Chats.GetClient(ChatId)
+        ?? throw new InvalidOperationException($"Chat client was not found: {ChatId}");
 }

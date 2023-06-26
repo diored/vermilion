@@ -1,3 +1,3 @@
 ﻿namespace DioRed.Vermilion;
 
-public record ChatId(string Type, long Id);
+public record ChatId(BotSystem System, string Type, string Id);

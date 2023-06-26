@@ -2,55 +2,56 @@
 
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 namespace DioRed.Vermilion.Telegram;
 
-public abstract class TelegramChatClient : IChatClient
+public class TelegramChatClient : ChatClient
 {
-    private readonly VermilionTelegramBot _bot;
+    private readonly TelegramVermilionBot _bot;
 
-    protected TelegramChatClient(Chat chat, VermilionTelegramBot bot)
+    public TelegramChatClient(Chat chat, TelegramVermilionBot bot)
+        : base(chat.GetChatId(), bot)
     {
-        Chat = chat;
-        ChatId = chat.GetChatId();
         _bot = bot;
+        Chat = chat;
     }
 
     public Chat Chat { get; }
-    public ChatId ChatId { get; }
 
     public async Task DeleteMessageAsync(int messageId, CancellationToken cancellationToken)
     {
-        await _bot.BotClient.DeleteMessageAsync(ChatId.Id, messageId, cancellationToken);
+        await _bot.BotClient.DeleteMessageAsync(Chat.Id, messageId, cancellationToken);
     }
 
-    protected virtual async Task<UserRole> GetUserRoleAsync(long userId, CancellationToken cancellationToken)
+    internal async Task HandleMessageAsync(Message message, CancellationToken cancellationToken)
     {
-        const long botSender = -1;
-
-        if (userId == botSender)
+        if (message.Text is null ||
+            message.From?.IsBot != false)
         {
-            return UserRole.Member;
+            return;
         }
 
-        if (userId == ChatId.Id)
+        string messageText = TrimBotName(message.Text);
+        await HandleMessageAsync(messageText, message.From.Id, message.MessageId, cancellationToken);
+    }
+
+    internal async Task HandleCallbackQueryAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken)
+    {
+        if (callbackQuery.Data is null)
         {
-            return UserRole.ChatAdmin;
+            return;
         }
 
-        ChatMember chatMember = await _bot.BotClient.GetChatMemberAsync(ChatId.Id, userId, cancellationToken);
-
-        return chatMember.Status is ChatMemberStatus.Administrator or ChatMemberStatus.Creator
-            ? UserRole.ChatAdmin
-            : UserRole.Member;
+        await HandleMessageAsync(callbackQuery.Data, callbackQuery.From.Id, 0, cancellationToken);
     }
 
-    protected string TrimBotName(string message)
+    private string TrimBotName(string message)
     {
-        return message.Replace("@" + _bot.BotUsername, string.Empty).Trim();
-    }
+        if (_bot.TelegramBot.Username is { } username)
+        {
+            return message.Replace("@" + username, string.Empty).Trim();
+        }
 
-    protected internal abstract Task HandleMessageAsync(Message message, CancellationToken cancellationToken);
-    protected internal abstract Task HandleCallbackQueryAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken);
+        return message;
+    }
 }

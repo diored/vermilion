@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace DioRed.Vermilion;
+namespace DioRed.Vermilion.Handlers;
 
 public class BotCommand
 {

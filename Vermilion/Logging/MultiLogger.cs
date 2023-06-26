@@ -1,4 +1,4 @@
-﻿namespace DioRed.Vermilion;
+﻿namespace DioRed.Vermilion.Logging;
 
 public class MultiLogger : ILogger
 {
