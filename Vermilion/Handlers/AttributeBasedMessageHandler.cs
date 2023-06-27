@@ -4,17 +4,15 @@ using System.Text.RegularExpressions;
 
 namespace DioRed.Vermilion.Handlers;
 
-public class AttributeBasedMessageHandler : IMessageHandler
+public class AttributeBasedMessageHandler : MessageHandlerBase
 {
     private static readonly Dictionary<Type, ICollection<BotCommand>> _commandCache = new();
 
     private readonly ICollection<BotCommand>? _commands;
 
     protected AttributeBasedMessageHandler(MessageContext messageContext)
+        : base(messageContext)
     {
-        MessageContext = messageContext;
-        ChatWriter = messageContext.Bot.Manager.GetChatWriter(messageContext.ChatId);
-
         if (messageContext.Bot.Manager.UseCommandsCache)
         {
             if (_commandCache.TryGetValue(GetType(), out var commands))
@@ -35,10 +33,7 @@ public class AttributeBasedMessageHandler : IMessageHandler
         }
     }
 
-    protected MessageContext MessageContext { get; }
-    protected IChatWriter ChatWriter { get; }
-
-    public async virtual Task HandleAsync(string message)
+    protected override async Task HandleMessageAsync(string message)
     {
         var commands = _commands ?? LoadCommandsFromCurrentClass();
 
@@ -56,20 +51,8 @@ public class AttributeBasedMessageHandler : IMessageHandler
                 ? match.Groups.AsEnumerable<Group>().Skip(1).Select(g => g.Value).ToArray()
                 : null;
 
-            try
-            {
-                await cmd.Handler(args);
-            }
-            catch (Exception ex)
-            {
-                await OnExceptionAsync(ex);
-            }
+            await cmd.Handler(args);
         }
-    }
-
-    protected virtual async Task OnExceptionAsync(Exception ex)
-    {
-        await ChatWriter.SendTextAsync($"Error occurred: {ex.Message}");
     }
 
     private List<BotCommand> LoadCommandsFromCurrentClass()
@@ -138,6 +121,8 @@ public class AttributeBasedMessageHandler : IMessageHandler
         {
             return templateAttribute.Pattern;
         }
+
+
 
         //if (parameterInfo.ParameterType == typeof(DateTime))
         //{

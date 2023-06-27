@@ -8,12 +8,12 @@
 		<PackageIcon>packageIcon.png</PackageIcon>
 		<PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Version>10.0.1</Version>
+		<Version>10.1.0</Version>
 		<Description>Telegram handler based implementation of Vermilion</Description>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Condition=" '$(Configuration)' != 'Debug' " Include="DioRed.Vermilion" Version="10.0.0" />
+		<PackageReference Condition=" '$(Configuration)' != 'Debug' " Include="DioRed.Vermilion" Version="10.1.0" />
 		<PackageReference Include="Telegram.Bot" Version="19.0.0" />
 	</ItemGroup>
 
