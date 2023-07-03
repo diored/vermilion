@@ -14,9 +14,9 @@ public class Broadcaster : IChatWriter
         await _botManager.Broadcast(writer => writer.SendHtmlAsync(html));
     }
 
-    public async Task SendPhotoAsync(string url, bool allowCaching = true)
+    public async Task SendPhotoAsync(string url)
     {
-        await _botManager.Broadcast(writer => writer.SendPhotoAsync(url, allowCaching));
+        await _botManager.Broadcast(writer => writer.SendPhotoAsync(url));
     }
 
     public async Task SendPhotoAsync(Stream stream)

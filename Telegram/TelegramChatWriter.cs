@@ -31,14 +31,8 @@ public class TelegramChatWriter : IChatWriter
         await Execute(() => _botClient.SendTextMessageAsync(_chatId, html, parseMode: ParseMode.Html));
     }
 
-    public async Task SendPhotoAsync(string url, bool allowCaching = true)
+    public async Task SendPhotoAsync(string url)
     {
-        if (!allowCaching)
-        {
-            char prefix = url.Contains('?') ? '&' : '?';
-            url = $"{url}{prefix}timestamp={DateTime.Now:s}";
-        }
-
         InputFile photo = InputFile.FromUri(url);
 
         await Execute(() => _botClient.SendPhotoAsync(_chatId, photo));
