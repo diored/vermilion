@@ -34,7 +34,13 @@ public abstract class MessageHandlerBase : IMessageHandler
         errorMessage.Append(": ").Append(ex);
 #endif
 
-        await ChatWriter.SendTextAsync(errorMessage.ToString());
+        try
+        {
+            await ChatWriter.SendTextAsync(errorMessage.ToString());
+        }
+        catch
+        { 
+        }
     }
 
     protected abstract Task HandleMessageAsync(string message);

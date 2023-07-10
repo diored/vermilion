@@ -6,27 +6,31 @@ public class VermilionManager
 {
     private readonly Dictionary<BotSystem, VermilionBot> _bots = new();
     private readonly VermilionConfiguration _configuration;
+    private readonly IMessageHandlerBuilder _messageHandlerBuilder;
 
     private CancellationTokenSource _cts;
 
-    public VermilionManager(VermilionConfiguration configuration, IChatStorage chatStorage, MessageHandlerBuilderDelegate messageHandlerBuilder)
+    public VermilionManager(VermilionConfiguration configuration, IChatStorage chatStorage, IMessageHandlerBuilder messageHandlerBuilder)
     {
         _configuration = configuration;
+        _messageHandlerBuilder = messageHandlerBuilder;
 
         _cts = new CancellationTokenSource();
 
         Chats = new ChatManager(chatStorage);
-        GetMessageHandler = messageHandlerBuilder;
 
         Logger = new MultiLogger();
         Logger.Loggers.Add(new ConsoleLogger());
     }
 
-    public MessageHandlerBuilderDelegate GetMessageHandler { get; }
-
     public MultiLogger Logger { get; }
     public IChatManager Chats { get; }
     public bool UseCommandsCache => _configuration.UseCommandsCache;
+
+    public IMessageHandler GetMessageHandler(MessageContext messageContext)
+    {
+        return _messageHandlerBuilder.BuildMessageHandler(messageContext);
+    }
 
     public VermilionManager AddBot(VermilionBot bot)
     {
@@ -76,5 +80,3 @@ public class VermilionManager
         return _bots[chatId.System].GetChatWriter(chatId);
     }
 }
-
-public delegate IMessageHandler MessageHandlerBuilderDelegate(MessageContext messageContext);

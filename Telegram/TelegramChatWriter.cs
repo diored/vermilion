@@ -47,7 +47,7 @@ public class TelegramChatWriter : IChatWriter
 
     protected virtual void OnException(Exception ex)
     {
-        throw new InvalidOperationException("Unhandled exception occured", ex);
+        throw new InvalidOperationException("Unhandled exception occurred", ex);
     }
 
     private async Task Execute(Func<Task> action)
