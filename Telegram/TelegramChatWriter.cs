@@ -45,20 +45,15 @@ public class TelegramChatWriter : IChatWriter
         await Execute(() => _botClient.SendPhotoAsync(_chatId, photo));
     }
 
-    protected virtual void OnException(Exception ex)
-    {
-        throw new InvalidOperationException("Unhandled exception occurred", ex);
-    }
-
-    private async Task Execute(Func<Task> action)
+    private static async Task Execute(Func<Task> action)
     {
         try
         {
             await action();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex.Message.Contains("blocked") || ex.Message.Contains("kicked"))
         {
-            OnException(ex);
+            throw new BotBlockedException(ex);
         }
     }
 }

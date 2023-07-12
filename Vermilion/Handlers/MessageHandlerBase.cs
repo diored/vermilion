@@ -19,6 +19,10 @@ public abstract class MessageHandlerBase : IMessageHandler
         {
             await HandleMessageAsync(message);
         }
+        catch (BotBlockedException)
+        {
+            MessageContext.Bot.Manager.Chats.RemoveFromStorage(MessageContext.ChatId);
+        }
         catch (Exception ex)
         {
             await OnExceptionAsync(ex);
@@ -39,7 +43,7 @@ public abstract class MessageHandlerBase : IMessageHandler
             await ChatWriter.SendTextAsync(errorMessage.ToString());
         }
         catch
-        { 
+        {
         }
     }
 
