@@ -50,9 +50,10 @@ public class ChatManager : IChatManager
         return chatClient;
     }
 
-    public void RemoveFromStorage(ChatId chatId)
+    public void Remove(ChatId chatId)
     {
         _chatStorage.RemoveChat(chatId);
+        _chatClients.Remove(chatId, out _);
     }
 
     private (ChatClient ChatClient, bool Added) AddChatClientInternal(ChatId chatId, ChatClient chatClient)

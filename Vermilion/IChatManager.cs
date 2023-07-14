@@ -7,5 +7,5 @@ public interface IChatManager
     ICollection<ChatClient> GetAllClients();
     ICollection<ChatId> GetStoredChats(BotSystem system);
     ChatClient? GetClient(ChatId chatId);
-    void RemoveFromStorage(ChatId chatId);
+    void Remove(ChatId chatId);
 }

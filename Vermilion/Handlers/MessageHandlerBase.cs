@@ -21,7 +21,7 @@ public abstract class MessageHandlerBase : IMessageHandler
         }
         catch (BotBlockedException)
         {
-            MessageContext.Bot.Manager.Chats.RemoveFromStorage(MessageContext.ChatId);
+            MessageContext.Bot.Manager.Chats.Remove(MessageContext.ChatId);
         }
         catch (Exception ex)
         {
