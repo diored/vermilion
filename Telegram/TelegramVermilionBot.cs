@@ -52,7 +52,7 @@ public class TelegramVermilionBot : VermilionBot
         try
         {
             Chat chat = await BotClient.GetChatAsync(chatId.GetTelegramId(), cancellationToken);
-            _ = GetChatClient(chat);
+            _ = GetTelegramChatClient(chat);
         }
         catch (Exception ex)
         {
@@ -64,17 +64,6 @@ public class TelegramVermilionBot : VermilionBot
         }
     }
 
-    protected internal TelegramChatClient GetChatClient(Chat chat)
-    {
-        ChatClient Create() => new TelegramChatClient(chat, this);
-
-        string GetTitle() => chat.Type == ChatType.Private
-            ? $"{chat.FirstName} {chat.LastName}".Trim()
-            : chat.Title ?? string.Empty;
-
-        return (TelegramChatClient)GetChatClient(chat.GetChatId(), Create, GetTitle);
-    }
-
     protected override IChatWriter GetChatWriter(ChatId chatId)
     {
         return new TelegramChatWriter(BotClient, chatId.GetTelegramId());
@@ -82,7 +71,7 @@ public class TelegramVermilionBot : VermilionBot
 
     internal async Task HandleMessageReceived(Message message, CancellationToken cancellationToken)
     {
-        var chatClient = GetChatClient(message.Chat);
+        var chatClient = GetTelegramChatClient(message.Chat);
         await chatClient.HandleMessageAsync(message, cancellationToken);
     }
 
@@ -94,7 +83,7 @@ public class TelegramVermilionBot : VermilionBot
             return;
         }
 
-        var chatClient = GetChatClient(message.Chat);
+        var chatClient = GetTelegramChatClient(message.Chat);
         await chatClient.HandleCallbackQueryAsync(callbackQuery, cancellationToken);
     }
 
@@ -109,7 +98,7 @@ public class TelegramVermilionBot : VermilionBot
 
         if (userId == botSender)
         {
-            return UserRole.Member;
+	        return UserRole.Bot;
         }
 
         long tgId = chatId.GetTelegramId();
@@ -130,5 +119,16 @@ public class TelegramVermilionBot : VermilionBot
         return chatMember.Status is ChatMemberStatus.Administrator or ChatMemberStatus.Creator
             ? UserRole.ChatAdmin
             : UserRole.Member;
+    }
+
+    private TelegramChatClient GetTelegramChatClient(Chat chat)
+    {
+	    ChatClient Create() => new TelegramChatClient(chat, this);
+
+	    string GetTitle() => chat.Type == ChatType.Private
+		    ? $"{chat.FirstName} {chat.LastName}".Trim()
+		    : chat.Title ?? string.Empty;
+
+	    return (TelegramChatClient)GetChatClient(chat.GetChatId(), Create, GetTitle);
     }
 }

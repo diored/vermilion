@@ -3,7 +3,8 @@
 [Flags]
 public enum UserRole
 {
-    Member = 0,
-    ChatAdmin = 1,
-    SuperAdmin = 2
+    Bot = 1,
+    Member = 2,
+    ChatAdmin = 4,
+    SuperAdmin = 128
 }
