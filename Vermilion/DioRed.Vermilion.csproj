@@ -8,7 +8,7 @@
 		<PackageIcon>packageIcon.png</PackageIcon>
 		<PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Version>10.4.1</Version>
+		<Version>10.4.2</Version>
 		<Description>Vermilion is a bot skeleton. Telegram support was extracted to the separate package DioRed.Vermilion.Telegram</Description>
 	</PropertyGroup>
 
