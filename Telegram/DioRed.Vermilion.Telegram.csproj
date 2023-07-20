@@ -8,7 +8,7 @@
 		<PackageIcon>packageIcon.png</PackageIcon>
 		<PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Version>10.4.2</Version>
+		<Version>10.4.3</Version>
 		<Description>Telegram handler based implementation of Vermilion</Description>
 		<Configurations>Debug;Release;DebugEngine</Configurations>
 	</PropertyGroup>
@@ -22,7 +22,7 @@
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(Configuration)' != 'DebugEngine' ">
-		<PackageReference Include="DioRed.Vermilion" Version="10.4.1" />
+		<PackageReference Include="DioRed.Vermilion" Version="10.4.2" />
 	</ItemGroup>
 
 	<ItemGroup>
