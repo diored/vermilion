@@ -1,4 +1,4 @@
-﻿using DioRed.Vermilion.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace DioRed.Vermilion;
 
@@ -7,23 +7,21 @@ public class VermilionManager
     private readonly Dictionary<BotSystem, VermilionBot> _bots = new();
     private readonly VermilionConfiguration _configuration;
     private readonly IMessageHandlerBuilder _messageHandlerBuilder;
+    private readonly ILogger<VermilionManager> _logger;
 
     private CancellationTokenSource _cts;
 
-    public VermilionManager(VermilionConfiguration configuration, IChatStorage chatStorage, IMessageHandlerBuilder messageHandlerBuilder)
+    public VermilionManager(VermilionConfiguration configuration, IChatStorage chatStorage, IMessageHandlerBuilder messageHandlerBuilder, ILogger<VermilionManager> logger)
     {
         _configuration = configuration;
         _messageHandlerBuilder = messageHandlerBuilder;
+        _logger = logger;
 
         _cts = new CancellationTokenSource();
 
         Chats = new ChatManager(chatStorage);
-
-        Logger = new MultiLogger();
-        Logger.Loggers.Add(new ConsoleLogger());
     }
 
-    public MultiLogger Logger { get; }
     public IChatManager Chats { get; }
     public bool UseCommandsCache => _configuration.UseCommandsCache;
 
@@ -55,12 +53,12 @@ public class VermilionManager
     public async Task StartAsync()
     {
         string greeting = _configuration.Greeting ?? "Vermilion bot manager started.";
-        Logger.LogInfo(greeting);
+        _logger.LogInformation(greeting);
 
         foreach ((BotSystem system, VermilionBot bot) in _bots)
         {
             await bot.StartAsync(_cts.Token);
-            Logger.LogInfo($"{system} system started");
+            _logger.LogInformation("{System} system started", system);
         }
     }
 

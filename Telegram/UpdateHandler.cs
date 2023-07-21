@@ -1,4 +1,6 @@
-﻿using Telegram.Bot;
+﻿using Microsoft.Extensions.Logging;
+
+using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
@@ -8,23 +10,25 @@ namespace DioRed.Vermilion.Telegram;
 internal class UpdateHandler : IUpdateHandler
 {
     private readonly TelegramVermilionBot _bot;
+    private readonly ILogger _logger;
 
-    public UpdateHandler(TelegramVermilionBot bot)
+    public UpdateHandler(TelegramVermilionBot bot, ILogger logger)
     {
         _bot = bot;
+        _logger = logger;
     }
 
     public Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
     {
-        string message = exception switch
+        string exceptionType = exception switch
         {
-            HttpRequestException httpEx => $"HTTP request error: {httpEx.Message}",
-            ApiRequestException apiEx => $"API request error [{apiEx.ErrorCode}]: {apiEx.Message}",
-            RequestException reqEx => $"Request exception: {reqEx.Message}",
-            _ => $"Error: {exception}"
+            HttpRequestException => "HTTP",
+            ApiRequestException => "API",
+            RequestException => "Request",
+            _ => "Unexpected"
         };
 
-        _bot.Manager.Logger.LogError(message);
+        _logger.LogError(exception, "{Type} error occurred during message polling", exceptionType);
 
         return Task.CompletedTask;
     }

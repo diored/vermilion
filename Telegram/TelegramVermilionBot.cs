@@ -1,6 +1,8 @@
 ﻿using DioRed.Vermilion.Telegram;
 using DioRed.Vermilion.Telegram.Extensions;
 
+using Microsoft.Extensions.Logging;
+
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -10,12 +12,14 @@ namespace DioRed.Vermilion;
 public class TelegramVermilionBot : VermilionBot
 {
     private readonly long? _superAdminId;
+    private readonly ILogger _logger;
 
-    public TelegramVermilionBot(TelegramBotConfiguration configuration)
+    public TelegramVermilionBot(TelegramBotConfiguration configuration, ILogger<TelegramVermilionBot> logger)
     {
         BotClient = new TelegramBotClient(configuration.BotToken);
         TelegramBot = BotClient.GetMeAsync().GetAwaiter().GetResult();
         _superAdminId = configuration.SuperAdminId;
+        _logger = logger;
     }
 
     public ITelegramBotClient BotClient { get; }
@@ -26,7 +30,7 @@ public class TelegramVermilionBot : VermilionBot
     protected override async Task StartAsync(CancellationToken cancellationToken)
     {
         await ReconnectToChatsAsync(cancellationToken);
-        BotClient.StartReceiving(new UpdateHandler(this), cancellationToken: cancellationToken);
+        BotClient.StartReceiving(new UpdateHandler(this, _logger), cancellationToken: cancellationToken);
     }
 
     private async Task ReconnectToChatsAsync(CancellationToken cancellationToken)
@@ -56,7 +60,7 @@ public class TelegramVermilionBot : VermilionBot
         }
         catch (Exception ex)
         {
-            Manager.Logger.LogError($"Cannot connect to chat #{chatId}: {ex.Message}");
+            _logger.LogError(ex, "Cannot connect to chat ({ChatId})", chatId);
             if (ex.Message.Contains("kicked") || ex.Message.Contains("blocked"))
             {
                 Manager.Chats.Remove(chatId);
