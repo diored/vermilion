@@ -55,7 +55,7 @@ public class TelegramVermilionBot : VermilionBot
     {
         try
         {
-            Chat chat = await BotClient.GetChatAsync(chatId.GetTelegramId(), cancellationToken);
+            Chat chat = await BotClient.GetChatAsync(chatId.Id, cancellationToken);
             _ = GetTelegramChatClient(chat);
         }
         catch (Exception ex)
@@ -70,7 +70,7 @@ public class TelegramVermilionBot : VermilionBot
 
     protected override IChatWriter GetChatWriter(ChatId chatId)
     {
-        return new TelegramChatWriter(BotClient, chatId.GetTelegramId());
+        return new TelegramChatWriter(BotClient, chatId.Id);
     }
 
     internal async Task HandleMessageReceived(Message message, CancellationToken cancellationToken)
@@ -105,9 +105,7 @@ public class TelegramVermilionBot : VermilionBot
 	        return UserRole.Bot;
         }
 
-        long tgId = chatId.GetTelegramId();
-
-        if (chatId.Type == ChatType.Private.ToString() && userId == tgId)
+        if (chatId.Type == ChatType.Private.ToString() && userId == chatId.Id)
         {
             UserRole userRole = UserRole.ChatAdmin;
             if (userId == _superAdminId)
@@ -118,7 +116,7 @@ public class TelegramVermilionBot : VermilionBot
             return userRole;
         }
 
-        ChatMember chatMember = await BotClient.GetChatMemberAsync(tgId, userId, cancellationToken);
+        ChatMember chatMember = await BotClient.GetChatMemberAsync(chatId.Id, userId, cancellationToken);
 
         return chatMember.Status is ChatMemberStatus.Administrator or ChatMemberStatus.Creator
             ? UserRole.ChatAdmin

@@ -9,12 +9,7 @@ internal static class ChatExtensions
         return new ChatId(
             System: BotSystem.Telegram,
             Type: chat.Type.ToString(),
-            Id: chat.Id.ToString()
+            Id: chat.Id
         );
-    }
-
-    public static long GetTelegramId(this ChatId chatId)
-    {
-        return long.Parse(chatId.Id);
     }
 }
