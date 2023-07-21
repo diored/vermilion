@@ -54,11 +54,13 @@ public class VermilionManager
     {
         string greeting = _configuration.Greeting ?? "Vermilion bot manager started.";
         _logger.LogInformation(greeting);
+        await Console.Out.WriteLineAsync(greeting);
 
         foreach ((BotSystem system, VermilionBot bot) in _bots)
         {
             await bot.StartAsync(_cts.Token);
             _logger.LogInformation("{System} system started", system);
+            await Console.Out.WriteLineAsync($"{system} system started");
         }
     }
 
