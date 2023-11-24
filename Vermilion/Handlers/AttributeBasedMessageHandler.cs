@@ -6,7 +6,7 @@ namespace DioRed.Vermilion.Handlers;
 
 public class AttributeBasedMessageHandler : MessageHandlerBase
 {
-    private static readonly Dictionary<Type, ICollection<BotCommand>> _commandCache = new();
+    private static readonly Dictionary<Type, ICollection<BotCommand>> _commandCache = [];
 
     private readonly ICollection<BotCommand>? _commands;
 
@@ -44,7 +44,7 @@ public class AttributeBasedMessageHandler : MessageHandlerBase
             .Take(1)
             .ToList();
 
-        if (command.Any())
+        if (command.Count != 0)
         {
             (BotCommand cmd, Match match) = command.First();
             var args = match.Groups.Count > 1
@@ -121,8 +121,6 @@ public class AttributeBasedMessageHandler : MessageHandlerBase
         {
             return templateAttribute.Pattern;
         }
-
-
 
         //if (parameterInfo.ParameterType == typeof(DateTime))
         //{

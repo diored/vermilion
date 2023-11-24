@@ -2,17 +2,9 @@
 
 namespace DioRed.Vermilion;
 
-public class ChatManager : IChatManager
+public class ChatManager(IChatStorage chatStorage) : IChatManager
 {
-    private readonly ConcurrentDictionary<ChatId, ChatClient> _chatClients;
-    private readonly IChatStorage _chatStorage;
-
-    public ChatManager(IChatStorage chatStorage)
-    {
-        _chatStorage = chatStorage;
-
-        _chatClients = new ConcurrentDictionary<ChatId, ChatClient>();
-    }
+    private readonly ConcurrentDictionary<ChatId, ChatClient> _chatClients = new();
 
     public ChatClient? GetClient(ChatId chatId)
     {
@@ -27,7 +19,7 @@ public class ChatManager : IChatManager
 
     public ICollection<ChatId> GetStoredChats(BotSystem system)
     {
-        return _chatStorage.GetChats()
+        return chatStorage.GetChats()
             .Where(chatId => chatId.System == system)
             .ToList();
     }
@@ -44,7 +36,7 @@ public class ChatManager : IChatManager
 
         if (added)
         {
-            _chatStorage.AddChat(chatId, title);
+            chatStorage.AddChat(chatId, title);
         }
 
         return chatClient;
@@ -52,7 +44,7 @@ public class ChatManager : IChatManager
 
     public void Remove(ChatId chatId)
     {
-        _chatStorage.RemoveChat(chatId);
+        chatStorage.RemoveChat(chatId);
         _chatClients.Remove(chatId, out _);
     }
 

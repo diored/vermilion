@@ -102,7 +102,7 @@ public class TelegramVermilionBot : VermilionBot
 
         if (userId == botSender)
         {
-	        return UserRole.Bot;
+            return UserRole.Bot;
         }
 
         if (chatId.Type == ChatType.Private.ToString() && userId == chatId.Id)
@@ -125,12 +125,12 @@ public class TelegramVermilionBot : VermilionBot
 
     private TelegramChatClient GetTelegramChatClient(Chat chat)
     {
-	    ChatClient Create() => new TelegramChatClient(chat, this);
+        ChatClient Create() => new TelegramChatClient(chat, this);
 
-	    string GetTitle() => chat.Type == ChatType.Private
-		    ? $"{chat.FirstName} {chat.LastName}".Trim()
-		    : chat.Title ?? string.Empty;
+        string GetTitle() => chat.Type == ChatType.Private
+            ? $"{chat.FirstName} {chat.LastName}".Trim()
+            : chat.Title ?? string.Empty;
 
-	    return (TelegramChatClient)GetChatClient(chat.GetChatId(), Create, GetTitle);
+        return (TelegramChatClient)GetChatClient(chat.GetChatId(), Create, GetTitle);
     }
 }

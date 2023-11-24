@@ -7,17 +7,8 @@ using Telegram.Bot.Types;
 
 namespace DioRed.Vermilion.Telegram;
 
-internal class UpdateHandler : IUpdateHandler
+internal class UpdateHandler(TelegramVermilionBot bot, ILogger logger) : IUpdateHandler
 {
-    private readonly TelegramVermilionBot _bot;
-    private readonly ILogger _logger;
-
-    public UpdateHandler(TelegramVermilionBot bot, ILogger logger)
-    {
-        _bot = bot;
-        _logger = logger;
-    }
-
     public Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
     {
         string exceptionType = exception switch
@@ -28,7 +19,7 @@ internal class UpdateHandler : IUpdateHandler
             _ => "Unexpected"
         };
 
-        _logger.LogError(exception, "{Type} error occurred during message polling", exceptionType);
+        logger.LogError(exception, "{Type} error occurred during message polling", exceptionType);
 
         return Task.CompletedTask;
     }
@@ -37,10 +28,10 @@ internal class UpdateHandler : IUpdateHandler
     {
         var handler = update switch
         {
-            { Message: { } message } => _bot.HandleMessageReceived(message, cancellationToken),
-            { EditedMessage: { } message } => _bot.HandleMessageReceived(message, cancellationToken),
-            { CallbackQuery: { } callbackQuery } => _bot.HandleCallbackQueryReceived(callbackQuery, cancellationToken),
-            _ => _bot.HandleOtherUpdateReceived(update, cancellationToken)
+            { Message: { } message } => bot.HandleMessageReceived(message, cancellationToken),
+            { EditedMessage: { } message } => bot.HandleMessageReceived(message, cancellationToken),
+            { CallbackQuery: { } callbackQuery } => bot.HandleCallbackQueryReceived(callbackQuery, cancellationToken),
+            _ => bot.HandleOtherUpdateReceived(update, cancellationToken)
         };
 
         await handler;

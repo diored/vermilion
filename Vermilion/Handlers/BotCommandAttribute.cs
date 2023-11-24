@@ -1,21 +1,14 @@
 ﻿namespace DioRed.Vermilion.Handlers;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-public class BotCommandAttribute : Attribute
+public class BotCommandAttribute(UserRole userRole, string command, BotCommandOptions options = BotCommandOptions.PlainText) : Attribute
 {
     public BotCommandAttribute(string command, BotCommandOptions options = BotCommandOptions.PlainText)
         : this(UserRole.Member, command, options)
     {
     }
 
-    public BotCommandAttribute(UserRole userRole, string command, BotCommandOptions options = BotCommandOptions.PlainText)
-    {
-        UserRole = userRole;
-        Command = command;
-        Options = options;
-    }
-
-    public string Command { get; }
-    public BotCommandOptions Options { get; }
-    public UserRole UserRole { get; }
+    public string Command { get; } = command;
+    public BotCommandOptions Options { get; } = options;
+    public UserRole UserRole { get; } = userRole;
 }

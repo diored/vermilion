@@ -2,32 +2,21 @@
 
 namespace DioRed.Vermilion;
 
-public class VermilionManager
+public class VermilionManager(
+    VermilionConfiguration configuration,
+    IChatStorage chatStorage,
+    IMessageHandlerBuilder messageHandlerBuilder,
+    ILogger<VermilionManager> logger)
 {
-    private readonly Dictionary<BotSystem, VermilionBot> _bots = new();
-    private readonly VermilionConfiguration _configuration;
-    private readonly IMessageHandlerBuilder _messageHandlerBuilder;
-    private readonly ILogger<VermilionManager> _logger;
+    private readonly Dictionary<BotSystem, VermilionBot> _bots = [];
+    private CancellationTokenSource _cts = new();
 
-    private CancellationTokenSource _cts;
-
-    public VermilionManager(VermilionConfiguration configuration, IChatStorage chatStorage, IMessageHandlerBuilder messageHandlerBuilder, ILogger<VermilionManager> logger)
-    {
-        _configuration = configuration;
-        _messageHandlerBuilder = messageHandlerBuilder;
-        _logger = logger;
-
-        _cts = new CancellationTokenSource();
-
-        Chats = new ChatManager(chatStorage);
-    }
-
-    public IChatManager Chats { get; }
-    public bool UseCommandsCache => _configuration.UseCommandsCache;
+    public IChatManager Chats { get; } = new ChatManager(chatStorage);
+    public bool UseCommandsCache => configuration.UseCommandsCache;
 
     public IMessageHandler GetMessageHandler(MessageContext messageContext)
     {
-        return _messageHandlerBuilder.BuildMessageHandler(messageContext);
+        return messageHandlerBuilder.BuildMessageHandler(messageContext);
     }
 
     public VermilionManager AddBot(VermilionBot bot)
@@ -52,14 +41,14 @@ public class VermilionManager
 
     public async Task StartAsync()
     {
-        string greeting = _configuration.Greeting ?? "Vermilion bot manager started.";
-        _logger.LogInformation(greeting);
+        string greeting = configuration.Greeting ?? "Vermilion bot manager started.";
+        logger.LogInformation(greeting);
         await Console.Out.WriteLineAsync(greeting);
 
         foreach ((BotSystem system, VermilionBot bot) in _bots)
         {
             await bot.StartAsync(_cts.Token);
-            _logger.LogInformation("{System} system started", system);
+            logger.LogInformation("{System} system started", system);
             await Console.Out.WriteLineAsync($"{system} system started");
         }
     }

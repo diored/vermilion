@@ -4,7 +4,7 @@ namespace DioRed.Vermilion.Handlers;
 
 public class BotCommand
 {
-    public Regex Regex { get; init; } = default!;
-    public UserRole Role { get; init; }
-    public Func<object[]?, Task> Handler { get; init; } = default!;
+    public required Regex Regex { get; init; }
+    public required UserRole Role { get; init; }
+    public required Func<object[]?, Task> Handler { get; init; }
 }

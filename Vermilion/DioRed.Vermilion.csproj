@@ -1,23 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<Authors>DioRED</Authors>
-		<PackageIcon>packageIcon.png</PackageIcon>
-		<PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Version>10.7.1</Version>
-		<Description>Vermilion is a bot skeleton. Telegram support was extracted to the separate package DioRed.Vermilion.Telegram</Description>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>$(MSBuildProjectName.Replace(" ", "_"))</AssemblyName>
+    <RootNamespace>$(AssemblyName)</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<None Include="Assets\packageIcon.png" Pack="true" PackagePath="" />
-	</ItemGroup>
+  <PropertyGroup>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Authors>DioRED</Authors>
+    <Version>10.8.1</Version>
+    <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
+    <PackageIcon>packageIcon.png</PackageIcon>
+    <Description>Vermilion is a bot skeleton. Telegram support was extracted to the separate package DioRed.Vermilion.Telegram</Description>
+  </PropertyGroup>
 
-	<ItemGroup>
-	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-	</ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\packageIcon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+  </ItemGroup>
 
 </Project>

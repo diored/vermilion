@@ -1,17 +1,10 @@
 ﻿namespace DioRed.Vermilion;
 
-public class ChatClient
+public class ChatClient(ChatId chatId, VermilionBot bot)
 {
     private readonly Dictionary<string, object> _properties = new();
-    private readonly VermilionBot _bot;
 
-    public ChatClient(ChatId chatId, VermilionBot bot)
-    {
-        ChatId = chatId;
-        _bot = bot;
-    }
-
-    public ChatId ChatId { get; }
+    public ChatId ChatId { get; } = chatId;
 
     public object? this[string property]
     {
@@ -37,13 +30,13 @@ public class ChatClient
     {
         MessageContext messageContext = new()
         {
-            Bot = _bot,
+            Bot = bot,
             ChatId = ChatId,
             MessageId = messageId,
-            UserRole = await _bot.GetUserRoleAsync(senderId, ChatId, cancellationToken)
+            UserRole = await bot.GetUserRoleAsync(senderId, ChatId, cancellationToken)
         };
 
-        IMessageHandler messageHandler = _bot.Manager.GetMessageHandler(messageContext);
+        IMessageHandler messageHandler = bot.Manager.GetMessageHandler(messageContext);
 
         await messageHandler.HandleAsync(message);
     }

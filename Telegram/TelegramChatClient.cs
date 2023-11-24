@@ -5,28 +5,18 @@ using Telegram.Bot.Types;
 
 namespace DioRed.Vermilion.Telegram;
 
-public class TelegramChatClient : ChatClient
+public class TelegramChatClient(Chat chat, TelegramVermilionBot bot) : ChatClient(chat.GetChatId(), bot)
 {
-    private readonly TelegramVermilionBot _bot;
-
-    public TelegramChatClient(Chat chat, TelegramVermilionBot bot)
-        : base(chat.GetChatId(), bot)
-    {
-        _bot = bot;
-        Chat = chat;
-    }
-
-    public Chat Chat { get; }
+    public Chat Chat { get; } = chat;
 
     public async Task DeleteMessageAsync(int messageId, CancellationToken cancellationToken)
     {
-        await _bot.BotClient.DeleteMessageAsync(Chat.Id, messageId, cancellationToken);
+        await bot.BotClient.DeleteMessageAsync(Chat.Id, messageId, cancellationToken);
     }
 
     internal async Task HandleMessageAsync(Message message, CancellationToken cancellationToken)
     {
-        if (message.Text is null ||
-            message.From?.IsBot != false)
+        if (message is { Text: null } or { From: not { IsBot: false } })
         {
             return;
         }
@@ -47,7 +37,7 @@ public class TelegramChatClient : ChatClient
 
     private string TrimBotName(string message)
     {
-        if (_bot.TelegramBot.Username is { } username)
+        if (bot.TelegramBot.Username is { } username)
         {
             return message.Replace("@" + username, string.Empty).Trim();
         }
