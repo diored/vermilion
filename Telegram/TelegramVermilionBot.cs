@@ -61,7 +61,7 @@ public class TelegramVermilionBot : VermilionBot
         catch (Exception ex)
         {
             _logger.LogError(ex, "Cannot connect to chat ({ChatId})", chatId);
-            if (ex.Message.Contains("kicked") || ex.Message.Contains("blocked"))
+            if (ex.Message.Contains("kicked") || ex.Message.Contains("blocked") || ex.Message.Contains("deactivated"))
             {
                 Manager.Chats.Remove(chatId);
             }

@@ -42,7 +42,7 @@ public class TelegramChatWriter(ITelegramBotClient botClient, long chatId) : ICh
         {
             await action();
         }
-        catch (Exception ex) when (ex.Message.Contains("blocked") || ex.Message.Contains("kicked"))
+        catch (Exception ex) when (ex.Message.Contains("blocked") || ex.Message.Contains("kicked") || ex.Message.Contains("deactivated"))
         {
             throw new BotBlockedException(ex);
         }
