@@ -1,7 +1,8 @@
-﻿using DioRed.Vermilion.Telegram.Extensions;
+using DioRed.Vermilion.Telegram.Extensions;
 
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace DioRed.Vermilion.Telegram;
 
@@ -16,7 +17,7 @@ public class TelegramChatClient(Chat chat, TelegramVermilionBot bot) : ChatClien
 
     internal async Task HandleMessageAsync(Message message, CancellationToken cancellationToken)
     {
-        if (message is { Text: null } or { From: not { IsBot: false } })
+        if (message is not { Type: MessageType.Text } or { Text: null } or { From: not { IsBot: false } })
         {
             return;
         }
