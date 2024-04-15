@@ -60,13 +60,11 @@ public class BotCore : IHostedService
         if (_options.ShowCoreVersion)
         {
             _logger.LogInformation("DioRED Vermilion Core {Version} is started.", Version);
-            Console.WriteLine($"DioRED Vermilion Core {Version} is started.");
         }
 
         if (_options.Greeting is not null)
         {
             _logger.LogInformation("{Greeting}", _options.Greeting);
-            Console.WriteLine(_options.Greeting);
         }
     }
 
@@ -91,7 +89,6 @@ public class BotCore : IHostedService
             await subsystem.Value.StartAsync(cancellationToken);
 
             _logger.LogInformation("{Subsystem} subsystem is started", subsystem.Key);
-            Console.WriteLine($"{subsystem.Key} subsystem is started");
         }
     }
 
@@ -114,7 +111,6 @@ public class BotCore : IHostedService
             await subsystem.Value.StopAsync(cancellationToken);
 
             _logger.LogInformation("{Subsystem} subsystem is stopped", subsystem.Key);
-            Console.WriteLine($"{subsystem.Key} subsystem is stopped");
         }
     }
 
