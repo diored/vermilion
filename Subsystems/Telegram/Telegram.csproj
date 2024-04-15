@@ -29,11 +29,11 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'DebugEngine' ">
-    <ProjectReference Include="..\..\Core\DioRed.Vermilion.Core.csproj" />
+    <ProjectReference Include="..\..\Core\Core.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' != 'DebugEngine' ">
-    <PackageReference Include="DioRed.Vermilion.Core" Version="11.0.1" />
+    <PackageReference Include="DioRed.Vermilion.Core" Version="11.0.2" />
   </ItemGroup>
 
 </Project>

@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Complete", "Complete\DioRed.Vermilion.Complete.csproj", "{EE81C207-F6CA-4B96-837E-EF835D658444}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Complete", "Complete\Complete.csproj", "{EE81C207-F6CA-4B96-837E-EF835D658444}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\DioRed.Vermilion.Core.csproj", "{0765956B-3227-4D68-890A-C8E5BD6D2336}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{0765956B-3227-4D68-890A-C8E5BD6D2336}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ChatStorage", "ChatStorage", "{076C2B17-DA6C-4356-BD84-AB409906B47F}"
 EndProject

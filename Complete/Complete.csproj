@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'DebugEngine' ">
-    <ProjectReference Include="..\Core\DioRed.Vermilion.Core.csproj" />
+    <ProjectReference Include="..\Core\Core.csproj" />
     <ProjectReference Include="..\ChatStorage\AzureTable\AzureTable.csproj" />
     <ProjectReference Include="..\ChatStorage\InMemory\InMemory.csproj" />
     <ProjectReference Include="..\ChatStorage\SqlServer\SqlServer.csproj" />
@@ -33,11 +33,11 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' != 'DebugEngine' ">
-    <PackageReference Include="DioRed.Vermilion.Core" Version="11.0.1" />
+    <PackageReference Include="DioRed.Vermilion.Core" Version="11.0.2" />
     <PackageReference Include="DioRed.Vermilion.ChatStorage.AzureTable" Version="11.0.0" />
     <PackageReference Include="DioRed.Vermilion.ChatStorage.InMemory" Version="11.0.0" />
     <PackageReference Include="DioRed.Vermilion.ChatStorage.SqlServer" Version="11.0.0" />
-    <PackageReference Include="DioRed.Vermilion.Telegram" Version="11.0.1" />
+    <PackageReference Include="DioRed.Vermilion.Telegram" Version="11.0.2" />
   </ItemGroup>
 
 </Project>
