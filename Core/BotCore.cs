@@ -184,6 +184,13 @@ public class BotCore : IHostedService
                 _ = _chatClients.Remove(chatId, out _);
                 break;
 
+            case PostResult.UnhandledException:
+                _logger.LogInformation(
+                    "Unhandled exception occurred during posting the message to chat {ChatId}",
+                    chatId
+                );
+                break;
+
             default:
                 throw new InvalidOperationException(
                     $"Unexpected PostResult: {postResult}"

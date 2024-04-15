@@ -105,6 +105,14 @@ public class TelegramSubsystem : ISubsystem
             );
             return PostResult.BotBlocked;
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Unhandled exception occurred during message posting"
+            );
+        }
+        return PostResult.UnhandledException;
     }
 
     protected virtual void OnMessagePosted(MessagePostedEventArgs e)

@@ -4,5 +4,6 @@ public enum PostResult
 {
     Success,
     ContentTypeNotSupported,
-    BotBlocked
+    BotBlocked,
+    UnhandledException
 }
