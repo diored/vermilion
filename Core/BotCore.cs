@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using DioRed.Vermilion.ChatStorage;
 using DioRed.Vermilion.Handling;
 using DioRed.Vermilion.Handling.Context;
+using DioRed.Vermilion.Interaction;
 using DioRed.Vermilion.Interaction.Content;
 using DioRed.Vermilion.Interaction.Receivers;
 using DioRed.Vermilion.Subsystems;

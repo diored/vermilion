@@ -1,4 +1,5 @@
 using DioRed.Vermilion.Handling.Context;
+using DioRed.Vermilion.Interaction;
 
 namespace DioRed.Vermilion.Handling;
 

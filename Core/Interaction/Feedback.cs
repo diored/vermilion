@@ -1,7 +1,7 @@
 using DioRed.Vermilion.Interaction.Content;
 using DioRed.Vermilion.Interaction.Receivers;
 
-namespace DioRed.Vermilion.Handling.Context;
+namespace DioRed.Vermilion.Interaction;
 
 public class Feedback(
     BotCore botCore,
@@ -60,6 +60,14 @@ public class Feedback(
             {
                 Url = url
             }
+        );
+    }
+
+    public async Task ContentAsync(Func<ChatId, Task<IContent>> buildAgenda)
+    {
+        await botCore.PostAsync(
+            receiver,
+            buildAgenda
         );
     }
 
