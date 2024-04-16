@@ -4,6 +4,7 @@ public enum PostResult
 {
     Success,
     ContentTypeNotSupported,
-    BotBlocked,
-    UnhandledException
+    ChatAccessDenied,
+    SubsystemFailure,
+    UnexpectedException
 }

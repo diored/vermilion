@@ -90,8 +90,26 @@ public class TelegramSubsystem : ISubsystem
 
         try
         {
-            await action;
-            return PostResult.Success;
+            const int maxRetryCount = 5;
+            for (int i = 0; i < maxRetryCount; i++)
+            {
+                if (i != 0)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(5 + (i + 1)));
+                }
+
+                try
+                {
+                    await action;
+                    return PostResult.Success;
+                }
+                catch (ApiRequestException ex) when (ex.Message.Contains("Too many requests"))
+                {
+                    // let's try again
+                }
+            }
+
+            return PostResult.SubsystemFailure;
         }
         catch (Exception ex) when (
             ex.Message.Contains("blocked") ||
@@ -103,7 +121,7 @@ public class TelegramSubsystem : ISubsystem
                 internalId,
                 ex.Message
             );
-            return PostResult.BotBlocked;
+            return PostResult.ChatAccessDenied;
         }
         catch (Exception ex)
         {
@@ -112,7 +130,7 @@ public class TelegramSubsystem : ISubsystem
                 "Unhandled exception occurred during message posting"
             );
         }
-        return PostResult.UnhandledException;
+        return PostResult.UnexpectedException;
     }
 
     protected virtual void OnMessagePosted(MessagePostedEventArgs e)
@@ -222,13 +240,6 @@ public class TelegramSubsystem : ISubsystem
         return userRole;
     }
 
-    private string GetChatTitle(Chat chat)
-    {
-        return chat.Type == ChatType.Private
-            ? $"{chat.FirstName} {chat.LastName}".Trim()
-            : chat.Title ?? "";
-    }
-
     private async Task SendTextAsync(
         long internalId,
         string text,
@@ -247,9 +258,16 @@ public class TelegramSubsystem : ISubsystem
         InputFile file
     )
     {
-        await _telegramBotClient.SendPhotoAsync(
+        _ = await _telegramBotClient.SendPhotoAsync(
             internalId,
             file
         );
+    }
+
+    private static string GetChatTitle(Chat chat)
+    {
+        return chat.Type == ChatType.Private
+            ? $"{chat.FirstName} {chat.LastName}".Trim()
+            : chat.Title ?? "";
     }
 }

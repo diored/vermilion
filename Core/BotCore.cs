@@ -69,7 +69,12 @@ public class BotCore : IHostedService
         }
     }
 
-    public static string Version { get; } = typeof(BotCore).Assembly.GetName().Version?.ToString() ?? "0.0";
+    public static string Version { get; } = typeof(BotCore).Assembly.GetName().Version?.ToString() switch
+    {
+        null => "0.0",
+        var v when v.EndsWith(".0") => v[..^2],
+        var v => v
+    };
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
@@ -176,18 +181,25 @@ public class BotCore : IHostedService
                 );
                 break;
 
-            case PostResult.BotBlocked:
+            case PostResult.ChatAccessDenied:
                 _logger.LogInformation(
-                    "Bot has been blocked. Chat {ChatId} will not be counted as a client anymore",
+                    "Access to the chat {ChatId} has been denied. This chat will not be counted as a client anymore",
                     chatId
                 );
                 await _chatStorage.RemoveChatAsync(chatId);
                 _ = _chatClients.Remove(chatId, out _);
                 break;
 
-            case PostResult.UnhandledException:
+            case PostResult.SubsystemFailure:
                 _logger.LogInformation(
-                    "Unhandled exception occurred during posting the message to chat {ChatId}",
+                    "Message delivery was failed in the chat {ChatId}",
+                    chatId
+                );
+                break;
+
+            case PostResult.UnexpectedException:
+                _logger.LogInformation(
+                    "Unexpected exception occurred during message posting to the chat {ChatId}",
                     chatId
                 );
                 break;
