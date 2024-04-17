@@ -111,7 +111,7 @@ public class TelegramSubsystem : ISubsystem
 
             return PostResult.SubsystemFailure;
         }
-        catch (Exception ex) when (
+        catch (ApiRequestException ex) when (
             ex.Message.Contains("blocked") ||
             ex.Message.Contains("kicked") ||
             ex.Message.Contains("deactivated"))
@@ -120,6 +120,17 @@ public class TelegramSubsystem : ISubsystem
                 "Chat {ChatId} was probably blocked. Message: {Message}",
                 internalId,
                 ex.Message
+            );
+            return PostResult.ChatAccessDenied;
+        }
+        catch (ApiRequestException ex) when (
+            ex.Message.Contains("group chat was upgraded to a supergroup chat")
+        )
+        {
+            _logger.LogInformation(
+                "Group Chat #{ChatId} was upgraded to a supergroup chat #{NewChatId}",
+                internalId,
+                ex.Parameters?.MigrateToChatId ?? 0
             );
             return PostResult.ChatAccessDenied;
         }
