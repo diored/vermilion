@@ -134,6 +134,16 @@ public class TelegramSubsystem : ISubsystem
             );
             return PostResult.ChatAccessDenied;
         }
+        catch (ApiRequestException ex) when (
+            ex.Message.Contains("chat not found")
+        )
+        {
+            _logger.LogInformation(
+                "Chat #{ChatId} was not found",
+                internalId
+            );
+            return PostResult.ChatAccessDenied;
+        }
         catch (Exception ex)
         {
             _logger.LogError(
