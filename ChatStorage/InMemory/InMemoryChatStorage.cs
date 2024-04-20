@@ -1,3 +1,5 @@
+using DioRed.Vermilion.ChatStorage.L10n;
+
 namespace DioRed.Vermilion.ChatStorage;
 
 public class InMemoryChatStorage : IChatStorage
@@ -8,7 +10,9 @@ public class InMemoryChatStorage : IChatStorage
     {
         if (!_chats.Add(chatId))
         {
-            throw new InvalidOperationException("Chat already presents in the storage");
+            throw new InvalidOperationException(
+                ExceptionMessages.ChatAlreadyStored_0
+            );
         }
 
         return Task.CompletedTask;

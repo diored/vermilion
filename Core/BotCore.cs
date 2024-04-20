@@ -6,6 +6,7 @@ using DioRed.Vermilion.Handling.Context;
 using DioRed.Vermilion.Interaction;
 using DioRed.Vermilion.Interaction.Content;
 using DioRed.Vermilion.Interaction.Receivers;
+using DioRed.Vermilion.L10n;
 using DioRed.Vermilion.Subsystems;
 
 using Microsoft.Extensions.Configuration;
@@ -60,18 +61,25 @@ public class BotCore : IHostedService
 
         if (_options.ShowCoreVersion)
         {
-            _logger.LogInformation("DioRED Vermilion Core {Version} is started.", Version);
+            _logger.LogInformation(
+                LogMessages.CoreVersionInfo_1,
+                Version
+            );
         }
 
         if (_options.Greeting is not null)
         {
-            _logger.LogInformation("{Greeting}", _options.Greeting);
+            _logger.LogInformation(
+                LogMessages.CustomGreeting_1,
+                _options.Greeting
+            );
         }
     }
 
     public static string Version { get; } = typeof(BotCore).Assembly.GetName().Version?.ToString() switch
     {
         null => "0.0",
+        var v when v.EndsWith(".0.0") => v[..^4],
         var v when v.EndsWith(".0") => v[..^2],
         var v => v
     };
@@ -83,7 +91,7 @@ public class BotCore : IHostedService
             if (_isStarted)
             {
                 throw new InvalidOperationException(
-                    "Bot core is started already"
+                    ExceptionMessages.BotCoreIsStartedAlready_0
                 );
             }
 
@@ -94,7 +102,10 @@ public class BotCore : IHostedService
         {
             await subsystem.Value.StartAsync(cancellationToken);
 
-            _logger.LogInformation("{Subsystem} subsystem is started", subsystem.Key);
+            _logger.LogInformation(
+                LogMessages.SubsystemStarted_1,
+                subsystem.Key
+            );
         }
     }
 
@@ -105,7 +116,7 @@ public class BotCore : IHostedService
             if (!_isStarted)
             {
                 throw new InvalidOperationException(
-                    "Bot core is stopped already"
+                    ExceptionMessages.BotCoreIsStoppedAlready_0
                 );
             }
 
@@ -116,7 +127,10 @@ public class BotCore : IHostedService
         {
             await subsystem.Value.StopAsync(cancellationToken);
 
-            _logger.LogInformation("{Subsystem} subsystem is stopped", subsystem.Key);
+            _logger.LogInformation(
+                LogMessages.SubsystemStopped_1,
+                subsystem.Key
+            );
         }
     }
 
@@ -175,7 +189,7 @@ public class BotCore : IHostedService
 
             case PostResult.ContentTypeNotSupported:
                 _logger.LogInformation(
-                    "Cannot post the content of type {ContentType} because it isn't supported by the target subsystem {Subsystem}",
+                    LogMessages.UnsupportedContent_2,
                     content.GetType().Name,
                     chatId.System
                 );
@@ -183,7 +197,7 @@ public class BotCore : IHostedService
 
             case PostResult.ChatAccessDenied:
                 _logger.LogInformation(
-                    "Access to the chat {ChatId} has been denied. This chat will not be counted as a client anymore",
+                    LogMessages.AccessDenied_1,
                     chatId
                 );
                 await _chatStorage.RemoveChatAsync(chatId);
@@ -192,21 +206,24 @@ public class BotCore : IHostedService
 
             case PostResult.SubsystemFailure:
                 _logger.LogInformation(
-                    "Message delivery was failed in the chat {ChatId}",
+                    LogMessages.MessageDeliveryFailed_1,
                     chatId
                 );
                 break;
 
             case PostResult.UnexpectedException:
                 _logger.LogInformation(
-                    "Unexpected exception occurred during message posting to the chat {ChatId}",
+                    LogMessages.UnexpectedException_1,
                     chatId
                 );
                 break;
 
             default:
                 throw new InvalidOperationException(
-                    $"Unexpected PostResult: {postResult}"
+                    string.Format(
+                        ExceptionMessages.UnexpectedPostResult_1,
+                        postResult
+                    )
                 );
         }
     }
@@ -247,7 +264,7 @@ public class BotCore : IHostedService
                     {
                         _logger.LogInformation(
                             1001,
-                            """Message "{Message}" handled as a command "{Command}" in {System} {Type} chat #{ChatId} (user role: {UserRole})""",
+                            LogMessages.MessageHandled_6,
                             context.Message.Text,
                             context.Message.Command,
                             context.Chat.Id.System,
@@ -266,7 +283,7 @@ public class BotCore : IHostedService
             _logger.LogError(
                 1900,
                 ex,
-                "Error occurred during message handling"
+                LogMessages.ErrorOccurred_0
             );
         }
         return;
@@ -378,8 +395,15 @@ public class BotCore : IHostedService
     {
         var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
-        return configuration.GetSection("Vermilion").Get<BotOptions>()
-            ?? throw new InvalidOperationException($"""Cannot read "Vermilion" value from the configuration""");
+        const string section = "Vermilion";
+
+        return configuration.GetSection(section).Get<BotOptions>()
+            ?? throw new InvalidOperationException(
+                string.Format(
+                    ExceptionMessages.CannotReadConfiguration_1,
+                    section
+                )
+            );
     }
     #endregion
 }

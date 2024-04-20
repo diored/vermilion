@@ -2,6 +2,7 @@ using System.Reflection;
 
 using DioRed.Vermilion.ChatStorage;
 using DioRed.Vermilion.Handling;
+using DioRed.Vermilion.L10n;
 using DioRed.Vermilion.Subsystems;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -40,7 +41,9 @@ public class BotCoreBuilder
     {
         if (_chatStorage is not null)
         {
-            throw new InvalidOperationException("Chat storage has been already initialized");
+            throw new InvalidOperationException(
+                ExceptionMessages.ChatStorageIsInitializedAlready_0
+            );
         }
 
         _chatStorage = chatStorage;
@@ -76,7 +79,11 @@ public class BotCoreBuilder
         if (!typeof(ICommandHandler).IsAssignableFrom(type))
         {
             throw new ArgumentException(
-                $"Type {type.Name} doesn't implement the interface {nameof(ICommandHandler)}.",
+                string.Format(
+                    ExceptionMessages.TypeDoesntImplementTheInterface_2,
+                    type.Name,
+                    nameof(ICommandHandler)
+                ),
                 nameof(type)
             );
         }

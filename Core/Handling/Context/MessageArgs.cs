@@ -5,7 +5,10 @@ public class MessageArgs(string?[] args)
     public int Count => args.Length;
     public string? this[int index] => index < args.Length ? args[index] : null;
 
-    public static MessageArgs Parse(string argsString, bool treatEmptyStringsAsNulls = true)
+    public static MessageArgs Parse(
+        string argsString,
+        bool treatEmptyStringsAsNulls = true
+    )
     {
         string?[] args = string.IsNullOrWhiteSpace(argsString)
             ? []

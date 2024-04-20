@@ -1,4 +1,5 @@
 using DioRed.Vermilion.Interaction.Content;
+using DioRed.Vermilion.Subsystems.Telegram.L10n;
 
 using Microsoft.Extensions.Logging;
 
@@ -51,7 +52,11 @@ public class TelegramSubsystem : ISubsystem
                     _ => "Unexpected"
                 };
 
-                _logger.LogError(exception, "{Type} error occurred during message polling", exceptionType);
+                _logger.LogError(
+                    exception,
+                    LogMessages.MessagePollingError_1,
+                    exceptionType
+                );
 
                 return Task.CompletedTask;
             },
@@ -117,7 +122,7 @@ public class TelegramSubsystem : ISubsystem
             ex.Message.Contains("deactivated"))
         {
             _logger.LogInformation(
-                "Chat {ChatId} was probably blocked. Message: {Message}",
+                LogMessages.ChatBlocked_2,
                 internalId,
                 ex.Message
             );
@@ -128,7 +133,7 @@ public class TelegramSubsystem : ISubsystem
         )
         {
             _logger.LogInformation(
-                "Group Chat #{ChatId} was upgraded to a supergroup chat #{NewChatId}",
+                LogMessages.GroupUpgradedToSuperGroup_2,
                 internalId,
                 ex.Parameters?.MigrateToChatId ?? 0
             );
@@ -139,7 +144,7 @@ public class TelegramSubsystem : ISubsystem
         )
         {
             _logger.LogInformation(
-                "Chat #{ChatId} was not found",
+                LogMessages.ChatNotFound_1,
                 internalId
             );
             return PostResult.ChatAccessDenied;
@@ -148,7 +153,7 @@ public class TelegramSubsystem : ISubsystem
         {
             _logger.LogError(
                 ex,
-                "Unhandled exception occurred during message posting"
+                ExceptionMessages.MessagePostUnhandledError_0
             );
         }
         return PostResult.UnexpectedException;

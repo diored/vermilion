@@ -1,3 +1,5 @@
+using DioRed.Vermilion.Subsystems.Telegram.L10n;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,7 +25,10 @@ public static class Extensions
 
         string botToken = configuration[ConfigKeys.BotToken]
             ?? throw new InvalidOperationException(
-                $"Cannot read {ConfigKeys.BotToken} value from the configuration"
+                string.Format(
+                    ExceptionMessages.CannotReadConfiguration_1,
+                    ConfigKeys.BotToken
+                )
             );
 
         long[] superAdmins;
