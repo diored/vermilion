@@ -1,3 +1,6 @@
+using System;
+using System.Net.Sockets;
+
 using DioRed.Vermilion.Interaction.Content;
 using DioRed.Vermilion.Subsystems.Telegram.L10n;
 
@@ -178,6 +181,40 @@ public class TelegramSubsystem : ISubsystem
             ? message.Text[..^(username.Length + 1)].Trim()
             : message.Text;
 
+        UserRole? senderRole = null;
+
+        const int maxRetryCount = 5;
+        for (int i = 0; i < maxRetryCount; i++)
+        {
+            if (i != 0)
+            {
+                await Task.Delay(
+                    TimeSpan.FromSeconds(5 + (i + 1)),
+                    cancellationToken
+                );
+            }
+
+            try
+            {
+                senderRole = await GetUserRoleAsync(
+                    message.From.Id,
+                    message.Chat,
+                    cancellationToken
+                );
+                break;
+            }
+            catch (SocketException)
+            {
+                // let's try again
+            }
+        }
+
+        if (senderRole is null)
+        {
+            _logger.LogInformation("Cannot get sender role. Message ignored");
+            return;
+        }
+
         OnMessagePosted(new MessagePostedEventArgs
         {
             ChatId = new ChatId(
@@ -189,11 +226,7 @@ public class TelegramSubsystem : ISubsystem
             Message = messageText,
             MessageId = message.MessageId,
             SenderId = message.From.Id,
-            SenderRole = await GetUserRoleAsync(
-                message.From.Id,
-                message.Chat,
-                cancellationToken
-            )
+            SenderRole = senderRole.Value
         });
     }
 
@@ -204,6 +237,40 @@ public class TelegramSubsystem : ISubsystem
     {
         if (callbackQuery is { Data: null } or { Message: null })
         {
+            return;
+        }
+
+        UserRole? senderRole = null;
+
+        const int maxRetryCount = 5;
+        for (int i = 0; i < maxRetryCount; i++)
+        {
+            if (i != 0)
+            {
+                await Task.Delay(
+                    TimeSpan.FromSeconds(5 + (i + 1)),
+                    cancellationToken
+                );
+            }
+
+            try
+            {
+                senderRole = await GetUserRoleAsync(
+                    callbackQuery.From.Id,
+                    callbackQuery.Message.Chat,
+                    cancellationToken
+                );
+                break;
+            }
+            catch (SocketException)
+            {
+                // let's try again
+            }
+        }
+
+        if (senderRole is null)
+        {
+            _logger.LogInformation("Cannot get sender role. Message ignored");
             return;
         }
 
@@ -218,11 +285,7 @@ public class TelegramSubsystem : ISubsystem
             Message = callbackQuery.Data,
             MessageId = callbackQuery.Message.MessageId,
             SenderId = callbackQuery.From.Id,
-            SenderRole = await GetUserRoleAsync(
-                callbackQuery.From.Id,
-                callbackQuery.Message.Chat,
-                cancellationToken
-            )
+            SenderRole = senderRole.Value
         });
     }
 
