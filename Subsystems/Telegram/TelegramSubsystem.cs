@@ -207,6 +207,18 @@ public class TelegramSubsystem : ISubsystem
             {
                 // let's try again
             }
+            catch (ApiRequestException ex) when (
+                ex.Message.Contains("blocked") ||
+                ex.Message.Contains("kicked") ||
+                ex.Message.Contains("deactivated"))
+            {
+                _logger.LogInformation(
+                    LogMessages.ChatBlocked_2,
+                    message.Chat.Id,
+                    ex.Message
+                );
+                return;
+            }
         }
 
         if (senderRole is null)
@@ -265,6 +277,18 @@ public class TelegramSubsystem : ISubsystem
             catch (SocketException)
             {
                 // let's try again
+            }
+            catch (ApiRequestException ex) when (
+                ex.Message.Contains("blocked") ||
+                ex.Message.Contains("kicked") ||
+                ex.Message.Contains("deactivated"))
+            {
+                _logger.LogInformation(
+                    LogMessages.ChatBlocked_2,
+                    callbackQuery.Message.Chat.Id,
+                    ex.Message
+                );
+                return;
             }
         }
 

@@ -13,7 +13,7 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>11.1.4</Version>
+    <Version>11.1.6</Version>
     <PackageId>DioRed.Vermilion.Telegram</PackageId>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
