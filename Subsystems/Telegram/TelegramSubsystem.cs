@@ -1,4 +1,3 @@
-using System;
 using System.Net.Sockets;
 
 using DioRed.Vermilion.Interaction.Content;
@@ -96,70 +95,7 @@ public class TelegramSubsystem : ISubsystem
             return PostResult.ContentTypeNotSupported;
         }
 
-        try
-        {
-            const int maxRetryCount = 5;
-            for (int i = 0; i < maxRetryCount; i++)
-            {
-                if (i != 0)
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(5 + (i + 1)));
-                }
-
-                try
-                {
-                    await action;
-                    return PostResult.Success;
-                }
-                catch (ApiRequestException ex) when (ex.Message.Contains("Too many requests"))
-                {
-                    // let's try again
-                }
-            }
-
-            return PostResult.SubsystemFailure;
-        }
-        catch (ApiRequestException ex) when (
-            ex.Message.Contains("blocked") ||
-            ex.Message.Contains("kicked") ||
-            ex.Message.Contains("deactivated"))
-        {
-            _logger.LogInformation(
-                LogMessages.ChatBlocked_2,
-                internalId,
-                ex.Message
-            );
-            return PostResult.ChatAccessDenied;
-        }
-        catch (ApiRequestException ex) when (
-            ex.Message.Contains("group chat was upgraded to a supergroup chat")
-        )
-        {
-            _logger.LogInformation(
-                LogMessages.GroupUpgradedToSuperGroup_2,
-                internalId,
-                ex.Parameters?.MigrateToChatId ?? 0
-            );
-            return PostResult.ChatAccessDenied;
-        }
-        catch (ApiRequestException ex) when (
-            ex.Message.Contains("chat not found")
-        )
-        {
-            _logger.LogInformation(
-                LogMessages.ChatNotFound_1,
-                internalId
-            );
-            return PostResult.ChatAccessDenied;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                ExceptionMessages.MessagePostUnhandledError_0
-            );
-        }
-        return PostResult.UnexpectedException;
+        return await DoActionAsync(action, internalId);
     }
 
     protected virtual void OnMessagePosted(MessagePostedEventArgs e)
@@ -181,47 +117,16 @@ public class TelegramSubsystem : ISubsystem
             ? message.Text[..^(username.Length + 1)].Trim()
             : message.Text;
 
-        UserRole? senderRole = null;
+        (PostResult result, UserRole senderRole) = await DoActionAsync(
+            GetUserRoleAsync(
+                message.From.Id,
+                message.Chat,
+                cancellationToken
+            ),
+            message.Chat.Id
+        );
 
-        const int maxRetryCount = 5;
-        for (int i = 0; i < maxRetryCount; i++)
-        {
-            if (i != 0)
-            {
-                await Task.Delay(
-                    TimeSpan.FromSeconds(5 + (i + 1)),
-                    cancellationToken
-                );
-            }
-
-            try
-            {
-                senderRole = await GetUserRoleAsync(
-                    message.From.Id,
-                    message.Chat,
-                    cancellationToken
-                );
-                break;
-            }
-            catch (SocketException)
-            {
-                // let's try again
-            }
-            catch (ApiRequestException ex) when (
-                ex.Message.Contains("blocked") ||
-                ex.Message.Contains("kicked") ||
-                ex.Message.Contains("deactivated"))
-            {
-                _logger.LogInformation(
-                    LogMessages.ChatBlocked_2,
-                    message.Chat.Id,
-                    ex.Message
-                );
-                return;
-            }
-        }
-
-        if (senderRole is null)
+        if (result != PostResult.Success)
         {
             _logger.LogInformation("Cannot get sender role. Message ignored");
             return;
@@ -238,7 +143,7 @@ public class TelegramSubsystem : ISubsystem
             Message = messageText,
             MessageId = message.MessageId,
             SenderId = message.From.Id,
-            SenderRole = senderRole.Value
+            SenderRole = senderRole
         });
     }
 
@@ -252,47 +157,16 @@ public class TelegramSubsystem : ISubsystem
             return;
         }
 
-        UserRole? senderRole = null;
+        (PostResult result, UserRole senderRole) = await DoActionAsync(
+            GetUserRoleAsync(
+                callbackQuery.From.Id,
+                callbackQuery.Message.Chat,
+                cancellationToken
+            ),
+            callbackQuery.Message.Chat.Id
+        );
 
-        const int maxRetryCount = 5;
-        for (int i = 0; i < maxRetryCount; i++)
-        {
-            if (i != 0)
-            {
-                await Task.Delay(
-                    TimeSpan.FromSeconds(5 + (i + 1)),
-                    cancellationToken
-                );
-            }
-
-            try
-            {
-                senderRole = await GetUserRoleAsync(
-                    callbackQuery.From.Id,
-                    callbackQuery.Message.Chat,
-                    cancellationToken
-                );
-                break;
-            }
-            catch (SocketException)
-            {
-                // let's try again
-            }
-            catch (ApiRequestException ex) when (
-                ex.Message.Contains("blocked") ||
-                ex.Message.Contains("kicked") ||
-                ex.Message.Contains("deactivated"))
-            {
-                _logger.LogInformation(
-                    LogMessages.ChatBlocked_2,
-                    callbackQuery.Message.Chat.Id,
-                    ex.Message
-                );
-                return;
-            }
-        }
-
-        if (senderRole is null)
+        if (result != PostResult.Success)
         {
             _logger.LogInformation("Cannot get sender role. Message ignored");
             return;
@@ -309,7 +183,7 @@ public class TelegramSubsystem : ISubsystem
             Message = callbackQuery.Data,
             MessageId = callbackQuery.Message.MessageId,
             SenderId = callbackQuery.From.Id,
-            SenderRole = senderRole.Value
+            SenderRole = senderRole
         });
     }
 
@@ -382,5 +256,138 @@ public class TelegramSubsystem : ISubsystem
         return chat.Type == ChatType.Private
             ? $"{chat.FirstName} {chat.LastName}".Trim()
             : chat.Title ?? "";
+    }
+
+    private async Task<PostResult> DoActionAsync(
+        Task action,
+        long internalId
+    )
+    {
+        const int maxRetryCount = 5;
+        for (int i = 0; i < maxRetryCount; i++)
+        {
+            if (i != 0)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(5 + (i + 1)));
+            }
+
+            try
+            {
+                await action;
+                return PostResult.Success;
+            }
+            catch (Exception ex)
+            {
+                TelegramException tgEx = GetTelegramException(ex, internalId);
+                if (tgEx is not (TelegramException.TooManyRequests or TelegramException.SocketException))
+                {
+                    return GetPostResult(tgEx);
+                }
+            }
+        }
+
+        // retry limit exceeded
+        return PostResult.SubsystemFailure;
+    }
+
+    private async Task<(PostResult result, T? value)> DoActionAsync<T>(
+        Task<T> action,
+        long internalId
+    )
+    {
+        const int maxRetryCount = 5;
+        for (int i = 0; i < maxRetryCount; i++)
+        {
+            if (i != 0)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(5 + (i + 1)));
+            }
+
+            try
+            {
+                T result = await action;
+                return (PostResult.Success, result);
+            }
+            catch (Exception ex)
+            {
+                TelegramException tgEx = GetTelegramException(ex, internalId);
+                if (tgEx is not (TelegramException.TooManyRequests or TelegramException.SocketException))
+                {
+                    return (GetPostResult(tgEx), default);
+                }
+            }
+        }
+
+        // retry limit exceeded
+        return (PostResult.SubsystemFailure, default);
+    }
+
+    private TelegramException GetTelegramException(
+        Exception ex,
+        long internalId
+    )
+    {
+        if (ex is ApiRequestException apiEx)
+        {
+            if (ex.Message.Contains("blocked") ||
+                ex.Message.Contains("kicked") ||
+                ex.Message.Contains("deactivated"))
+            {
+                _logger.LogInformation(
+                    LogMessages.ChatBlocked_2,
+                    internalId,
+                    ex.Message
+                );
+
+                return TelegramException.BotBlocked;
+            }
+
+            if (ex.Message.Contains("group chat was upgraded to a supergroup chat"))
+            {
+                _logger.LogInformation(
+                    LogMessages.GroupUpgradedToSuperGroup_2,
+                    internalId,
+                    apiEx.Parameters?.MigrateToChatId ?? 0
+                );
+                return TelegramException.GroupUpgraded;
+            }
+
+            if (ex.Message.Contains("chat not found"))
+            {
+                _logger.LogInformation(
+                    LogMessages.ChatNotFound_1,
+                    internalId
+                );
+                return TelegramException.ChatNotFound;
+            }
+
+            if (ex.Message.Contains("Too many requests"))
+            {
+                return TelegramException.TooManyRequests;
+            }
+        }
+
+        if (ex is SocketException)
+        {
+            return TelegramException.SocketException;
+        }
+
+        _logger.LogError(
+            ex,
+            ExceptionMessages.MessagePostUnhandledError_0
+        );
+        return TelegramException.Unexpected;
+    }
+
+    private static PostResult GetPostResult(TelegramException tgEx)
+    {
+        return tgEx switch
+        {
+            TelegramException.Unexpected => PostResult.UnexpectedException,
+            TelegramException.BotBlocked or
+            TelegramException.ChatNotFound or
+            TelegramException.GroupUpgraded => PostResult.ChatAccessDenied,
+            _ => PostResult.SubsystemFailure
+        };
     }
 }
