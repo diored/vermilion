@@ -13,7 +13,7 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>11.1.7</Version>
+    <Version>11.2.0</Version>
     <PackageId>DioRed.Vermilion.Telegram</PackageId>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' != 'DebugEngine' ">
-    <PackageReference Include="DioRed.Vermilion.Core" Version="11.1.0" />
+    <PackageReference Include="DioRed.Vermilion.Core" Version="11.2.0" />
   </ItemGroup>
 
 </Project>

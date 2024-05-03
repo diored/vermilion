@@ -42,7 +42,7 @@ public class BotCoreBuilder
         if (_chatStorage is not null)
         {
             throw new InvalidOperationException(
-                ExceptionMessages.ChatStorageIsInitializedAlready_0
+                ExceptionMessages.ChatStorageAlreadyInitialized_0
             );
         }
 
