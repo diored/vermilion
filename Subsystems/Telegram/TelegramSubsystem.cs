@@ -143,8 +143,14 @@ public class TelegramSubsystem : ISubsystem
             Message = messageText,
             MessageId = message.MessageId,
             SenderId = message.From.Id,
-            SenderRole = senderRole
+            SenderRole = senderRole,
+            SenderName = GetUserName(message.From)
         });
+    }
+
+    private static string GetUserName(User user)
+    {
+        return $"{user.FirstName} {user.LastName}".Trim();
     }
 
     private async Task HandleCallbackQueryReceived(
@@ -183,7 +189,8 @@ public class TelegramSubsystem : ISubsystem
             Message = callbackQuery.Data,
             MessageId = callbackQuery.Message.MessageId,
             SenderId = callbackQuery.From.Id,
-            SenderRole = senderRole
+            SenderRole = senderRole,
+            SenderName = GetUserName(callbackQuery.From)
         });
     }
 

@@ -4,4 +4,5 @@ public class SenderContext
 {
     public required long Id { get; init; }
     public required UserRole Role { get; init; }
+    public required string Name { get; init; }
 }

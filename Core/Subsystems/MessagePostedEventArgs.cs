@@ -8,4 +8,5 @@ public class MessagePostedEventArgs : EventArgs
     public required string ChatTitle { get; init; }
     public required long SenderId { get; init; }
     public required UserRole SenderRole { get; init; }
+    public required string SenderName { get; init; }
 }

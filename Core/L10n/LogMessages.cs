@@ -1,3 +1,4 @@
+
 namespace DioRed.Vermilion.L10n;
 
 internal static class LogMessages
@@ -15,4 +16,8 @@ internal static class LogMessages
     public const string UnexpectedException_1 = "Unexpected exception occurred during message posting to the chat {ChatId}";
     public const string MessageHandled_6 = """Message "{Message}" handled as a command "{Command}" in {System} {Type} chat #{ChatId} (user role: {UserRole})""";
     public const string ErrorOccurred_0 = "Error occurred during message handling";
+    public const string ChatRemoved_1 = "Chat {ChatId} removed";
+    public const string ChatRemoveFailure_1 = "Chat {ChatId} removal failed";
+    public const string ChatAdded_1 = "Chat {ChatId} added";
+    public const string ChatAddFailure_1 = "Chat {ChatId} add failure";
 }

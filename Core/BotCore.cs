@@ -291,8 +291,26 @@ public class BotCore(
                     LogMessages.AccessDenied_1,
                     chatId
                 );
-                await chatStorage.RemoveChatAsync(chatId);
-                _ = _chatClients.Remove(chatId, out _);
+
+                try
+                {
+                    await chatStorage.RemoveChatAsync(chatId);
+                    _ = _chatClients.Remove(chatId, out _);
+                    logger.LogInformation(
+                        Events.ChatRemoved,
+                        LogMessages.ChatRemoved_1,
+                        chatId
+                    );
+                }
+                catch
+                {
+                    logger.LogWarning(
+                        Events.ChatRemoveFailure,
+                        LogMessages.ChatRemoveFailure_1,
+                        chatId
+                    );
+                    throw;
+                }
                 break;
 
             case PostResult.SubsystemFailure:
@@ -341,7 +359,8 @@ public class BotCore(
                 Sender = new SenderContext
                 {
                     Id = args.SenderId,
-                    Role = args.SenderRole
+                    Role = args.SenderRole,
+                    Name = args.SenderName
                 }
             };
 
@@ -354,7 +373,7 @@ public class BotCore(
                     if (options.LogCommands && handler.Definition.LogHandling)
                     {
                         logger.LogInformation(
-                            1001,
+                            Events.MessageHandled,
                             LogMessages.MessageHandled_6,
                             context.Message.Text,
                             context.Message.Command,
@@ -372,7 +391,7 @@ public class BotCore(
         catch (Exception ex)
         {
             logger.LogError(
-                1900,
+                Events.MessageHandleException,
                 ex,
                 LogMessages.ErrorOccurred_0
             );
@@ -386,10 +405,27 @@ public class BotCore(
                 properties = [];
                 if (_chatClients.TryAdd(args.ChatId, properties))
                 {
-                    await chatStorage.AddChatAsync(
-                        args.ChatId,
-                        options.SaveChatTitles ? args.ChatTitle : string.Empty
-                    );
+                    try
+                    {
+                        await chatStorage.AddChatAsync(
+                            args.ChatId,
+                            options.SaveChatTitles ? args.ChatTitle : string.Empty
+                        );
+                        logger.LogInformation(
+                            Events.ChatAdded,
+                            LogMessages.ChatAdded_1,
+                            args.ChatId
+                        );
+                    }
+                    catch
+                    {
+                        logger.LogWarning(
+                            Events.ChatAddFailure,
+                            LogMessages.ChatAddFailure_1,
+                            args.ChatId
+                        );
+                        throw;
+                    }
                 }
                 else
                 {
@@ -400,6 +436,7 @@ public class BotCore(
             return new ChatContext
             {
                 Id = args.ChatId,
+                Title = args.ChatTitle,
                 Properties = properties
             };
         }
