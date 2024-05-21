@@ -24,11 +24,11 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'DebugEngine' ">
-    <ProjectReference Include="..\Core\Core.csproj" />
-    <ProjectReference Include="..\ChatStorage\AzureTable\AzureTable.csproj" />
-    <ProjectReference Include="..\ChatStorage\InMemory\InMemory.csproj" />
-    <ProjectReference Include="..\ChatStorage\SqlServer\SqlServer.csproj" />
-    <ProjectReference Include="..\Subsystems\Telegram\Telegram.csproj" />
+    <ProjectReference Include="..\Core\Vermilion.Core.csproj" />
+    <ProjectReference Include="..\ChatStorage\AzureTable\Vermilion.ChatStorage.AzureTable.csproj" />
+    <ProjectReference Include="..\ChatStorage\InMemory\Vermilion.ChatStorage.InMemory.csproj" />
+    <ProjectReference Include="..\ChatStorage\SqlServer\Vermilion.ChatStorage.SqlServer.csproj" />
+    <ProjectReference Include="..\Subsystems\Telegram\Vermilion.Subsystems.Telegram.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' != 'DebugEngine' ">

@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'DebugEngine' ">
-    <ProjectReference Include="..\..\Core\Core.csproj" />
+    <ProjectReference Include="..\..\Core\Vermilion.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' != 'DebugEngine' ">
