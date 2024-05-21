@@ -23,7 +23,8 @@ public class BotCore(
     IEnumerable<KeyValuePair<string, ISubsystem>> subsystems,
     IEnumerable<ICommandHandler> commandHandlers,
     BotOptions options,
-    ILogger<BotCore> logger
+    ILogger<BotCore> logger,
+    Func<ChatId, bool> chatClientEligibility
 ) : IHostedService
 {
     public static readonly object _lock = new();
@@ -341,14 +342,20 @@ public class BotCore(
     {
         try
         {
-            ChatContext chatContext = await BuildChatContextAsync();
             (string command, string? tail) = SplitMessage();
-            ICommandHandler[] handlers = FindMatchedHandlers(command, tail is not null);
+
+            ICommandHandler[] handlers = FindMatchedHandlers(
+                command,
+                hasTail: tail is not null,
+                clientIsEligible: chatClientEligibility(args.ChatId)
+            );
 
             if (handlers.Length == 0)
             {
                 return;
             }
+
+            ChatContext chatContext = await BuildChatContextAsync();
 
             MessageContext messageContext = BuildMessageContext(command, tail);
 
@@ -448,7 +455,7 @@ public class BotCore(
                 : (args.Message, null);
         }
 
-        ICommandHandler[] FindMatchedHandlers(string command, bool hasTail)
+        ICommandHandler[] FindMatchedHandlers(string command, bool hasTail, bool clientIsEligible)
         {
             return
             [
@@ -457,7 +464,8 @@ public class BotCore(
                     handler => handler.Definition.Matches(
                         command,
                         hasTail,
-                        args.SenderRole
+                        args.SenderRole,
+                        clientIsEligible
                     )
                 )
                 .OrderByDescending(

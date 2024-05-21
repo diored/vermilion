@@ -9,11 +9,13 @@ public class CommandDefinition
     public UserRole RequiredRole { get; init; } = UserRole.Member;
     public CommandPriority Priority { get; init; } = CommandPriority.Medium;
     public bool LogHandling { get; init; } = false;
+    public bool EligibleClientsOnly { get; init; } = true;
 
     public bool Matches(
         string command,
         bool hasTail,
-        UserRole senderRole
+        UserRole senderRole,
+        bool clientIsEligible
     )
     {
         return Template.Matches(command) &&
@@ -21,6 +23,10 @@ public class CommandDefinition
                 !HasTail.HasValue ||
                 HasTail == hasTail
             ) &&
-            senderRole.HasFlag(RequiredRole);
+            senderRole.HasFlag(RequiredRole) &&
+            (
+                !EligibleClientsOnly ||
+                clientIsEligible
+            );
     }
 }

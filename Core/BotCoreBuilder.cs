@@ -18,6 +18,7 @@ public class BotCoreBuilder
     private readonly ILogger<BotCore> _botCoreLogger;
 
     private IChatStorage? _chatStorage;
+    private Func<ChatId, bool> _chatClientEligibility;
 
     internal BotCoreBuilder(
         IServiceProvider serviceProvider,
@@ -27,6 +28,7 @@ public class BotCoreBuilder
         Services = serviceProvider;
         _options = options;
         _botCoreLogger = Services.GetRequiredService<ILoggerFactory>().CreateLogger<BotCore>();
+        _chatClientEligibility = _ => true;
     }
 
     public IServiceProvider Services { get; }
@@ -148,6 +150,20 @@ public class BotCoreBuilder
         return this;
     }
 
+    public BotCoreBuilder AllowForChats(Func<ChatId, bool> chatClientEligibility)
+    {
+        _chatClientEligibility = chatClientEligibility;
+
+        return this;
+    }
+
+    public BotCoreBuilder AllowForChats(IEnumerable<ChatId> chatIds)
+    {
+        ChatId[] chats = [.. chatIds];
+
+        return AllowForChats(chats.Contains);
+    }
+
     public BotCore Build()
     {
         return new BotCore(
@@ -155,7 +171,8 @@ public class BotCoreBuilder
             _subsystems,
             _commandHandlers,
             _options.Clone(),
-            _botCoreLogger
+            _botCoreLogger,
+            _chatClientEligibility
         );
     }
 

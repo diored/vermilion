@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <AssemblyName>DioRed.Vermilion.ChatStorage.SqlServer</AssemblyName>
     <RootNamespace>DioRed.Vermilion.ChatStorage</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -13,7 +12,8 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>11.3.0</Version>
+    <PackageId>DioRed.Vermilion.ChatStorage.SqlServer</PackageId>
+    <Version>11.4.0</Version>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
     <Description>SQL Server based chat storage for the Vermilion chat bot engine.</Description>
@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' != 'DebugEngine' ">
-    <PackageReference Include="DioRed.Vermilion.Core" Version="11.3.0" />
+    <PackageReference Include="DioRed.Vermilion.Core" Version="11.4.0" />
   </ItemGroup>
 
 </Project>
