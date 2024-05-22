@@ -13,7 +13,7 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
     <PackageId>DioRed.Vermilion.ChatStorage.AzureTable</PackageId>
-    <Version>11.4.0</Version>
+    <Version>11.5.0</Version>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
     <Description>Azure table based chat storage for the Vermilion chat bot engine.</Description>
@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' != 'DebugEngine' ">
-    <PackageReference Include="DioRed.Vermilion.Core" Version="11.4.0" />
+    <PackageReference Include="DioRed.Vermilion.Core" Version="11.5.0" />
   </ItemGroup>
 
 </Project>
