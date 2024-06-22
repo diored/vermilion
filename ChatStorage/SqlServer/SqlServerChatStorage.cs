@@ -1,5 +1,7 @@
 using System.Text.RegularExpressions;
 
+using DioRed.Common;
+
 using Microsoft.Data.SqlClient;
 
 namespace DioRed.Vermilion.ChatStorage;
@@ -10,8 +12,33 @@ public partial class SqlServerChatStorage(
     string schema = "dbo"
 ) : IChatStorage
 {
-    private readonly string _table = ValidateIdentifier("Table", table);
-    private readonly string _schema = ValidateIdentifier("Schema", schema);
+    #region Ctor validation
+
+#pragma warning disable IDE0052 // Remove unread private members
+    private readonly Unit __validator = Validate(schema, table);
+#pragma warning restore IDE0052 // Remove unread private members
+
+    private static Unit Validate(string schema, string table)
+    {
+        ValidateIdentifier("Schema", schema);
+        ValidateIdentifier("Table", table);
+
+        return default;
+    }
+
+    private static void ValidateIdentifier(string name, string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new InvalidOperationException($"{name} couldn't be empty");
+        }
+
+        if (!SimpleIdentifierRegex().IsMatch(value))
+        {
+            throw new InvalidOperationException($"{name} contains unexpected characters");
+        }
+    }
+    #endregion
 
     public async Task AddChatAsync(ChatId chatId, string title)
     {
@@ -19,7 +46,7 @@ public partial class SqlServerChatStorage(
 
         using SqlCommand command = new(
             $"""
-            INSERT INTO [{_table}]
+            INSERT INTO [{schema}].[{table}]
             ([System], [Id], [Type], [Title])
             VALUES
             (@System, @Id, @Type, @Title)
@@ -46,7 +73,7 @@ public partial class SqlServerChatStorage(
         using SqlCommand command = new(
             $"""
             SELECT [System], [Id], [Type]
-            FROM [{_schema}].[{_table}]
+            FROM [{schema}].[{table}]
             """,
             connection
         );
@@ -80,7 +107,7 @@ public partial class SqlServerChatStorage(
 
         using SqlCommand command = new(
             $"""
-            DELETE FROM [{_schema}].[{_table}]
+            DELETE FROM [{schema}].[{table}]
             WHERE [System] = @System
                 AND [Id] = @Id
             """,
@@ -104,16 +131,16 @@ public partial class SqlServerChatStorage(
             IF NOT EXISTS (
                 SELECT 'X'
                 FROM INFORMATION_SCHEMA.TABLES
-                WHERE TABLE_NAME = '{_table}'
-                    AND TABLE_SCHEMA = '{_schema}'
+                WHERE TABLE_NAME = '{table}'
+                    AND TABLE_SCHEMA = '{schema}'
             )
             BEGIN
-                CREATE TABLE {_schema}.{_table} (
+                CREATE TABLE [{schema}].[{table}] (
                     [System] [nvarchar](20) NOT NULL,
                     [Id] bigint NOT NULL,
                     [Type] [nvarchar](50) NOT NULL,
                     [Title] [nvarchar](250) NOT NULL,
-                  CONSTRAINT [PK_{_table}] PRIMARY KEY CLUSTERED
+                  CONSTRAINT [PK_{table}] PRIMARY KEY CLUSTERED
                   (
                     [System] ASC,
                     [Id] ASC
@@ -125,21 +152,6 @@ public partial class SqlServerChatStorage(
         );
 
         await command.ExecuteNonQueryAsync();
-    }
-
-    private static string ValidateIdentifier(string name, string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new InvalidOperationException($"{name} couldn't be empty");
-        }
-
-        if (!SimpleIdentifierRegex().IsMatch(value))
-        {
-            throw new InvalidOperationException($"{name} contains unexpected characters");
-        }
-
-        return value;
     }
 
     [GeneratedRegex("""(?:\w+\.)?\w+""")]
