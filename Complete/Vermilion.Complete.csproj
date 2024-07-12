@@ -12,7 +12,7 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>11.5.2</Version>
+    <Version>11.6.0</Version>
     <PackageId>DioRed.Vermilion</PackageId>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
@@ -32,11 +32,11 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' != 'DebugEngine' ">
-    <PackageReference Include="DioRed.Vermilion.Core" Version="11.5.0" />
-    <PackageReference Include="DioRed.Vermilion.ChatStorage.AzureTable" Version="11.5.0" />
-    <PackageReference Include="DioRed.Vermilion.ChatStorage.InMemory" Version="11.5.0" />
-    <PackageReference Include="DioRed.Vermilion.ChatStorage.SqlServer" Version="11.5.2" />
-    <PackageReference Include="DioRed.Vermilion.Telegram" Version="11.5.0" />
+    <PackageReference Include="DioRed.Vermilion.Core" Version="11.6.0" />
+    <PackageReference Include="DioRed.Vermilion.ChatStorage.AzureTable" Version="11.6.0" />
+    <PackageReference Include="DioRed.Vermilion.ChatStorage.InMemory" Version="11.6.0" />
+    <PackageReference Include="DioRed.Vermilion.ChatStorage.SqlServer" Version="11.6.0" />
+    <PackageReference Include="DioRed.Vermilion.Telegram" Version="11.6.0" />
   </ItemGroup>
 
 </Project>
