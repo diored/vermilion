@@ -2,7 +2,7 @@ namespace DioRed.Vermilion.ChatStorage;
 
 public interface IChatStorage
 {
-    Task AddChatAsync(ChatId chatId, string title);
-    Task<ChatId[]> GetChatsAsync();
+    Task AddChatAsync(ChatInfo chatInfo, string title);
+    Task<ChatInfo[]> GetChatsAsync();
     Task RemoveChatAsync(ChatId chatId);
 }

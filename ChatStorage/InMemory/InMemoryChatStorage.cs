@@ -4,11 +4,11 @@ namespace DioRed.Vermilion.ChatStorage;
 
 public class InMemoryChatStorage : IChatStorage
 {
-    private readonly HashSet<ChatId> _chats = [];
+    private readonly HashSet<ChatInfo> _chats = [];
 
-    public Task AddChatAsync(ChatId chatId, string title)
+    public Task AddChatAsync(ChatInfo chatInfo, string title)
     {
-        if (!_chats.Add(chatId))
+        if (!_chats.Add(chatInfo))
         {
             throw new InvalidOperationException(
                 ExceptionMessages.ChatAlreadyStored_0
@@ -18,14 +18,14 @@ public class InMemoryChatStorage : IChatStorage
         return Task.CompletedTask;
     }
 
-    public Task<ChatId[]> GetChatsAsync()
+    public Task<ChatInfo[]> GetChatsAsync()
     {
         return Task.FromResult(_chats.ToArray());
     }
 
     public Task RemoveChatAsync(ChatId chatId)
     {
-        _ = _chats.Remove(chatId);
+        _ = _chats.RemoveWhere(chatInfo => chatInfo.ChatId == chatId);
 
         return Task.CompletedTask;
     }

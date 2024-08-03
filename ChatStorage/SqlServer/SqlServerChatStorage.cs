@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 using DioRed.Common;
@@ -40,24 +41,25 @@ public partial class SqlServerChatStorage(
     }
     #endregion
 
-    public async Task AddChatAsync(ChatId chatId, string title)
+    public async Task AddChatAsync(ChatInfo chatInfo, string title)
     {
         using SqlConnection connection = new(connectionString);
 
         using SqlCommand command = new(
             $"""
             INSERT INTO [{schema}].[{table}]
-            ([System], [Id], [Type], [Title])
+            ([System], [Id], [Type], [Title], [Tags])
             VALUES
-            (@System, @Id, @Type, @Title)
+            (@System, @Id, @Type, @Title, @Tags)
             """,
             connection
         );
 
-        command.Parameters.AddWithValue("@System", chatId.System);
-        command.Parameters.AddWithValue("@Id", chatId.Id);
-        command.Parameters.AddWithValue("@Type", chatId.Type);
+        command.Parameters.AddWithValue("@System", chatInfo.ChatId.System);
+        command.Parameters.AddWithValue("@Id", chatInfo.ChatId.Id);
+        command.Parameters.AddWithValue("@Type", chatInfo.ChatId.Type);
         command.Parameters.AddWithValue("@Title", title);
+        command.Parameters.AddWithValue("@Tags", JsonSerializer.Serialize(chatInfo.Tags));
 
         await connection.OpenAsync();
 
@@ -66,13 +68,13 @@ public partial class SqlServerChatStorage(
         await command.ExecuteNonQueryAsync();
     }
 
-    public async Task<ChatId[]> GetChatsAsync()
+    public async Task<ChatInfo[]> GetChatsAsync()
     {
         using SqlConnection connection = new(connectionString);
 
         using SqlCommand command = new(
             $"""
-            SELECT [System], [Id], [Type]
+            SELECT [System], [Id], [Type], [Tags]
             FROM [{schema}].[{table}]
             """,
             connection
@@ -82,18 +84,24 @@ public partial class SqlServerChatStorage(
 
         await EnsureTableExistsAsync(connection);
 
-        List<ChatId> chats = [];
+        List<ChatInfo> chats = [];
 
         SqlDataReader reader = await command.ExecuteReaderAsync();
 
         while (await reader.ReadAsync())
         {
             chats.Add(
-                new ChatId
+                new ChatInfo
                 {
-                    System = reader.GetString(0),
-                    Id = reader.GetInt64(1),
-                    Type = reader.GetString(2)
+                    ChatId = new ChatId
+                    {
+                        System = reader.GetString(0),
+                        Id = reader.GetInt64(1),
+                        Type = reader.GetString(2)
+                    },
+                    Tags = reader.IsDBNull(3)
+                        ? []
+                        : JsonSerializer.Deserialize<string[]>(reader.GetString(3)) ?? []
                 }
             );
         }

@@ -14,8 +14,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-using ChatProperties = System.Collections.Generic.Dictionary<string, object?>;
-
 namespace DioRed.Vermilion;
 
 public class BotCore(
@@ -31,7 +29,7 @@ public class BotCore(
 
     private readonly Dictionary<string, ISubsystem> _subsystems = new(subsystems);
     private readonly ICommandHandler[] _commandHandlers = [.. commandHandlers];
-    private readonly ConcurrentDictionary<ChatId, ChatProperties> _chatClients = [];
+    private readonly ConcurrentDictionary<ChatId, ChatClient> _chatClients = [];
 
     private BotCoreState _state = BotCoreState.NotInitialized;
 
@@ -169,7 +167,7 @@ public class BotCore(
         );
     }
 
-    public Task PostAsync(Receiver receiver, Func<ChatId, string> text)
+    public Task PostAsync(Receiver receiver, Func<ChatInfo, string> text)
     {
         return PostAsync(
             receiver,
@@ -180,7 +178,7 @@ public class BotCore(
         );
     }
 
-    public Task PostAsync(Receiver receiver, Func<ChatId, IContent> contentBuilder)
+    public Task PostAsync(Receiver receiver, Func<ChatInfo, IContent> contentBuilder)
     {
         return PostAsync(
             receiver,
@@ -190,16 +188,16 @@ public class BotCore(
         );
     }
 
-    public async Task PostAsync(Receiver receiver, Func<ChatId, Task<IContent>> contentBuilder)
+    public async Task PostAsync(Receiver receiver, Func<ChatInfo, Task<IContent>> contentBuilder)
     {
-        ChatId[] chats = GetChats(receiver);
+        ChatInfo[] chats = GetChats(receiver);
 
-        foreach (var chat in chats)
+        foreach (ChatInfo chat in chats)
         {
             IContent content = await contentBuilder(chat);
 
-            PostResult postResult = await _subsystems[chat.System].PostAsync(
-                chat.Id,
+            PostResult postResult = await _subsystems[chat.ChatId.System].PostAsync(
+                chat.ChatId.Id,
                 content
             );
 
@@ -223,13 +221,17 @@ public class BotCore(
 
         try
         {
-            ChatId[] chats = chatStorage.GetChatsAsync().GetAwaiter().GetResult();
+            ChatInfo[] chats = chatStorage.GetChatsAsync().GetAwaiter().GetResult();
 
-            foreach (ChatId chatId in chats)
+            foreach (ChatInfo chatInfo in chats)
             {
                 _ = _chatClients.TryAdd(
-                    chatId,
-                    []
+                    chatInfo.ChatId,
+                    new ChatClient
+                    {
+                        ChatInfo = chatInfo,
+                        Properties = []
+                    }
                 );
             }
 
@@ -263,15 +265,20 @@ public class BotCore(
         }
     }
 
-    private ChatId[] GetChats(Receiver receiver) => receiver switch
+    private ChatInfo[] GetChats(Receiver receiver)
     {
-        SingleChatReceiver single => [single.ChatId],
-        BroadcastReceiver broadcast => [.. _chatClients.Select(x => x.Key).Where(broadcast.Filter)],
-        EveryoneReceiver => [.. _chatClients.Select(x => x.Key)],
-        _ => throw new ArgumentOutOfRangeException(nameof(receiver), receiver, null)
-    };
+        Func<ChatInfo, bool> selector = receiver switch
+        {
+            SingleChatReceiver single => (ChatInfo chatInfo) => chatInfo.ChatId == single.ChatId,
+            BroadcastReceiver broadcast => (ChatInfo chatInfo) => broadcast.Filter(chatInfo),
+            EveryoneReceiver => (ChatInfo chatInfo) => true,
+            _ => throw new ArgumentOutOfRangeException(nameof(receiver), receiver, null)
+        };
 
-    private async Task ProcessResultAsync(PostResult postResult, ChatId chatId, IContent content)
+        return [.. _chatClients.Select(x => x.Value.ChatInfo).Where(selector)];
+    }
+
+    private async Task ProcessResultAsync(PostResult postResult, ChatInfo chat, IContent content)
     {
         switch (postResult)
         {
@@ -283,24 +290,24 @@ public class BotCore(
                 logger.LogInformation(
                     LogMessages.UnsupportedContent_2,
                     content.GetType().Name,
-                    chatId.System
+                    chat.ChatId.System
                 );
                 break;
 
             case PostResult.ChatAccessDenied:
                 logger.LogInformation(
                     LogMessages.AccessDenied_1,
-                    chatId
+                    chat
                 );
 
                 try
                 {
-                    await chatStorage.RemoveChatAsync(chatId);
-                    _ = _chatClients.Remove(chatId, out _);
+                    await chatStorage.RemoveChatAsync(chat.ChatId);
+                    _ = _chatClients.Remove(chat.ChatId, out _);
                     logger.LogInformation(
                         Events.ChatRemoved,
                         LogMessages.ChatRemoved_1,
-                        chatId
+                        chat
                     );
                 }
                 catch
@@ -308,7 +315,7 @@ public class BotCore(
                     logger.LogWarning(
                         Events.ChatRemoveFailure,
                         LogMessages.ChatRemoveFailure_1,
-                        chatId
+                        chat
                     );
                     throw;
                 }
@@ -317,14 +324,14 @@ public class BotCore(
             case PostResult.SubsystemFailure:
                 logger.LogInformation(
                     LogMessages.MessageDeliveryFailed_1,
-                    chatId
+                    chat
                 );
                 break;
 
             case PostResult.UnexpectedException:
                 logger.LogInformation(
                     LogMessages.UnexpectedException_1,
-                    chatId
+                    chat
                 );
                 break;
 
@@ -407,17 +414,24 @@ public class BotCore(
 
         async Task<ChatContext> BuildChatContextAsync()
         {
-            if (!_chatClients.TryGetValue(args.ChatId, out var properties))
+            if (!_chatClients.TryGetValue(args.ChatId, out var chatClient))
             {
-                properties = [];
-                if (_chatClients.TryAdd(args.ChatId, properties))
+                ChatInfo chatInfo = new() { ChatId = args.ChatId };
+
+                chatClient = new ChatClient
+                {
+                    ChatInfo = chatInfo
+                };
+
+                if (_chatClients.TryAdd(args.ChatId, chatClient))
                 {
                     try
                     {
                         await chatStorage.AddChatAsync(
-                            args.ChatId,
+                            chatInfo,
                             options.SaveChatTitles ? args.ChatTitle : string.Empty
                         );
+
                         logger.LogInformation(
                             Events.ChatAdded,
                             LogMessages.ChatAdded_1,
@@ -436,7 +450,7 @@ public class BotCore(
                 }
                 else
                 {
-                    properties = _chatClients[args.ChatId];
+                    chatClient = _chatClients[args.ChatId];
                 }
             }
 
@@ -444,7 +458,8 @@ public class BotCore(
             {
                 Id = args.ChatId,
                 Title = args.ChatTitle,
-                Properties = properties
+                Tags = chatClient.ChatInfo.Tags,
+                Properties = chatClient.Properties
             };
         }
 

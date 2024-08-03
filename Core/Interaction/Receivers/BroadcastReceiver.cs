@@ -1,6 +1,6 @@
-﻿namespace DioRed.Vermilion.Interaction.Receivers;
+namespace DioRed.Vermilion.Interaction.Receivers;
 
 public class BroadcastReceiver : Receiver
 {
-    public required Func<ChatId, bool> Filter { get; init; }
+    public required Func<ChatInfo, bool> Filter { get; init; }
 }

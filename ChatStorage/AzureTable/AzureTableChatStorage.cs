@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 using Azure.Data.Tables;
 
 using DioRed.Common.AzureStorage;
@@ -11,26 +13,27 @@ public class AzureTableChatStorage(
 {
     private readonly TableClient _tableClient = new AzureStorageClient(settings).Table(tableName);
 
-    public async Task AddChatAsync(ChatId chatId, string title)
+    public async Task AddChatAsync(ChatInfo chatInfo, string title)
     {
         await _tableClient.CreateIfNotExistsAsync();
 
         ChatTableEntity entity = new()
         {
-            PartitionKey = chatId.System,
-            Type = chatId.Type,
-            RowKey = chatId.Id.ToString(),
-            Title = title
+            PartitionKey = chatInfo.ChatId.System,
+            Type = chatInfo.ChatId.Type,
+            RowKey = chatInfo.ChatId.Id.ToString(),
+            Title = title,
+            Tags = JsonSerializer.Serialize(chatInfo.Tags)
         };
 
         await _tableClient.AddEntityAsync(entity);
     }
 
-    public async Task<ChatId[]> GetChatsAsync()
+    public async Task<ChatInfo[]> GetChatsAsync()
     {
         await _tableClient.CreateIfNotExistsAsync();
 
-        List<ChatId> chats = [];
+        List<ChatInfo> chats = [];
 
         await foreach (var entity in _tableClient.QueryAsync<ChatTableEntity>())
         {
@@ -40,11 +43,17 @@ public class AzureTableChatStorage(
             }
 
             chats.Add(
-                new ChatId
+                new ChatInfo
                 {
-                    System = entity.PartitionKey,
-                    Id = id,
-                    Type = entity.Type ?? ""
+                    ChatId = new ChatId
+                    {
+                        System = entity.PartitionKey,
+                        Id = id,
+                        Type = entity.Type ?? "",
+                    },
+                    Tags = entity.Tags is null or ""
+                        ? []
+                        : JsonSerializer.Deserialize<string[]>(entity.Tags) ?? []
                 }
             );
         }
@@ -66,5 +75,6 @@ public class AzureTableChatStorage(
     {
         public string? Title { get; set; }
         public string? Type { get; set; }
+        public string? Tags { get; set; }
     }
 }
