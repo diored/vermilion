@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
+using Dapper;
+
 using DioRed.Common;
 
 using Microsoft.Data.SqlClient;
@@ -43,98 +45,116 @@ public partial class SqlServerChatStorage(
 
     public async Task AddChatAsync(ChatInfo chatInfo, string title)
     {
-        using SqlConnection connection = new(connectionString);
+        using SqlConnection db = new(connectionString);
 
-        using SqlCommand command = new(
+        await EnsureTableExistsAsync(db);
+
+        await db.ExecuteAsync(
             $"""
             INSERT INTO [{schema}].[{table}]
             ([System], [Id], [Type], [Title], [Tags])
             VALUES
             (@System, @Id, @Type, @Title, @Tags)
             """,
-            connection
+            new
+            {
+                System = chatInfo.ChatId.System,
+                Id = chatInfo.ChatId.Id,
+                Type = chatInfo.ChatId.Type,
+                Title = title,
+                Tags = BuildTagsString(chatInfo.Tags)
+            }
+        );
+    }
+
+    public async Task<ChatInfo> GetChatAsync(ChatId chatId)
+    {
+        using SqlConnection db = new(connectionString);
+
+        await EnsureTableExistsAsync(db);
+
+        ChatInfoDto? dto = await db.QueryFirstAsync<ChatInfoDto>(
+            $"""
+            SELECT TOP 1 [System], [Id], [Type], [Tags]
+            FROM [{schema}].[{table}]
+            WHERE [System] = @System
+                AND [Id] = @Id
+            """,
+            new
+            {
+                System = chatId.System,
+                Id = chatId.Id
+            }
         );
 
-        command.Parameters.AddWithValue("@System", chatInfo.ChatId.System);
-        command.Parameters.AddWithValue("@Id", chatInfo.ChatId.Id);
-        command.Parameters.AddWithValue("@Type", chatInfo.ChatId.Type);
-        command.Parameters.AddWithValue("@Title", title);
-        command.Parameters.AddWithValue("@Tags", JsonSerializer.Serialize(chatInfo.Tags));
+        if (dto is null)
+        {
+            throw new ArgumentException(
+                message: $"Chat {chatId} not found",
+                paramName: nameof(chatId)
+            );
+        }
 
-        await connection.OpenAsync();
-
-        await EnsureTableExistsAsync(connection);
-
-        await command.ExecuteNonQueryAsync();
+        return BuildEntity(dto);
     }
 
     public async Task<ChatInfo[]> GetChatsAsync()
     {
-        using SqlConnection connection = new(connectionString);
+        using SqlConnection db = new(connectionString);
 
-        using SqlCommand command = new(
+        await EnsureTableExistsAsync(db);
+
+        IEnumerable<ChatInfoDto> dtos = await db.QueryAsync<ChatInfoDto>(
             $"""
             SELECT [System], [Id], [Type], [Tags]
             FROM [{schema}].[{table}]
-            """,
-            connection
+            """
         );
 
-        await connection.OpenAsync();
-
-        await EnsureTableExistsAsync(connection);
-
-        List<ChatInfo> chats = [];
-
-        SqlDataReader reader = await command.ExecuteReaderAsync();
-
-        while (await reader.ReadAsync())
-        {
-            chats.Add(
-                new ChatInfo
-                {
-                    ChatId = new ChatId
-                    {
-                        System = reader.GetString(0),
-                        Id = reader.GetInt64(1),
-                        Type = reader.GetString(2)
-                    },
-                    Tags = reader.IsDBNull(3)
-                        ? []
-                        : JsonSerializer.Deserialize<string[]>(reader.GetString(3)) ?? []
-                }
-            );
-        }
-
-        return [.. chats];
+        return [.. dtos.Select(BuildEntity)];
     }
 
     public async Task RemoveChatAsync(ChatId chatId)
     {
-        using SqlConnection connection = new(connectionString);
+        using SqlConnection db = new(connectionString);
 
-        using SqlCommand command = new(
+        await db.ExecuteAsync(
             $"""
             DELETE FROM [{schema}].[{table}]
             WHERE [System] = @System
                 AND [Id] = @Id
             """,
-            connection
+            new
+            {
+                System = chatId.System,
+                Id = chatId.Id,
+            }
         );
+    }
 
-        command.Parameters.AddWithValue("@System", chatId.System);
-        command.Parameters.AddWithValue("@Id", chatId.Id);
+    public async Task UpdateChatAsync(ChatInfo chatInfo)
+    {
+        using SqlConnection db = new(connectionString);
 
-        await connection.OpenAsync();
-
-        await EnsureTableExistsAsync(connection);
-
-        await command.ExecuteNonQueryAsync();
+        await db.ExecuteAsync(
+            $"""
+            UPDATE [{schema}].[{table}]
+            SET [Tags] = @Tags
+            WHERE [System] = @System
+                AND [Id] = @Id
+            """,
+            new
+            {
+                System = chatInfo.ChatId.System,
+                Id = chatInfo.ChatId.Id,
+                Tags = BuildTagsString(chatInfo.Tags)
+            }
+        );
     }
 
     private async Task EnsureTableExistsAsync(SqlConnection connection)
     {
-        using SqlCommand command = new(
+        await connection.ExecuteAsync(
             $"""
             IF NOT EXISTS (
                 SELECT 'X'
@@ -155,13 +175,38 @@ public partial class SqlServerChatStorage(
                   ) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
                 ) ON [PRIMARY]
             END
-            """,
-            connection
+            """
         );
+    }
 
-        await command.ExecuteNonQueryAsync();
+    private static string BuildTagsString(string[] tags)
+    {
+        return JsonSerializer.Serialize(tags);
+    }
+
+    private static string[] ParseTagsString(string? tagsString)
+    {
+        return tagsString is null or ""
+            ? []
+            : JsonSerializer.Deserialize<string[]>(tagsString) ?? [];
+    }
+
+    private static ChatInfo BuildEntity(ChatInfoDto dto)
+    {
+        return new ChatInfo
+        {
+            ChatId = new ChatId
+            {
+                System = dto.System,
+                Id = dto.Id,
+                Type = dto.Type
+            },
+            Tags = ParseTagsString(dto.Tags)
+        };
     }
 
     [GeneratedRegex("""(?:\w+\.)?\w+""")]
     private static partial Regex SimpleIdentifierRegex();
+
+    private record ChatInfoDto(string System, long Id, string Type, string? Tags);
 }

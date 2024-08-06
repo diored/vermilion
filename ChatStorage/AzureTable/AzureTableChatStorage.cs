@@ -1,5 +1,6 @@
 using System.Text.Json;
 
+using Azure;
 using Azure.Data.Tables;
 
 using DioRed.Common.AzureStorage;
@@ -23,10 +24,30 @@ public class AzureTableChatStorage(
             Type = chatInfo.ChatId.Type,
             RowKey = chatInfo.ChatId.Id.ToString(),
             Title = title,
-            Tags = JsonSerializer.Serialize(chatInfo.Tags)
+            Tags = BuildTagsString(chatInfo.Tags)
         };
 
         await _tableClient.AddEntityAsync(entity);
+    }
+
+    public async Task<ChatInfo> GetChatAsync(ChatId chatId)
+    {
+        await _tableClient.CreateIfNotExistsAsync();
+
+        var response = await _tableClient.GetEntityIfExistsAsync<ChatTableEntity>(
+             partitionKey: chatId.System,
+             rowKey: chatId.Id.ToString()
+         );
+
+        if (!response.HasValue)
+        {
+            throw new ArgumentException(
+                message: $"Chat {chatId} not found",
+                paramName: nameof(chatId)
+            );
+        }
+
+        return BuildEntity(response.Value!);
     }
 
     public async Task<ChatInfo[]> GetChatsAsync()
@@ -37,25 +58,7 @@ public class AzureTableChatStorage(
 
         await foreach (var entity in _tableClient.QueryAsync<ChatTableEntity>())
         {
-            if (!long.TryParse(entity.RowKey, out long id))
-            {
-                continue;
-            }
-
-            chats.Add(
-                new ChatInfo
-                {
-                    ChatId = new ChatId
-                    {
-                        System = entity.PartitionKey,
-                        Id = id,
-                        Type = entity.Type ?? "",
-                    },
-                    Tags = entity.Tags is null or ""
-                        ? []
-                        : JsonSerializer.Deserialize<string[]>(entity.Tags) ?? []
-                }
-            );
+            chats.Add(BuildEntity(entity));
         }
 
         return [.. chats];
@@ -63,12 +66,55 @@ public class AzureTableChatStorage(
 
     public async Task RemoveChatAsync(ChatId chatId)
     {
-        await _tableClient.CreateIfNotExistsAsync();
-
         await _tableClient.DeleteEntityAsync(
             chatId.System,
             chatId.Id.ToString()
         );
+    }
+
+    public async Task UpdateChatAsync(ChatInfo chatInfo)
+    {
+        var response = await _tableClient.GetEntityIfExistsAsync<ChatTableEntity>(
+            partitionKey: chatInfo.ChatId.System,
+            rowKey: chatInfo.ChatId.Id.ToString()
+        );
+
+        if (!response.HasValue)
+        {
+            throw new InvalidOperationException($"Chat {chatInfo.ChatId} not found");
+        }
+
+        ChatTableEntity entity = response.Value!;
+
+        entity.Tags = BuildTagsString(chatInfo.Tags);
+
+        await _tableClient.UpdateEntityAsync(entity, ETag.All);
+    }
+
+    private static string BuildTagsString(string[] tags)
+    {
+        return JsonSerializer.Serialize(tags);
+    }
+
+    private static string[] ParseTagsString(string? tagsString)
+    {
+        return tagsString is null or ""
+            ? []
+            : JsonSerializer.Deserialize<string[]>(tagsString) ?? [];
+    }
+
+    private static ChatInfo BuildEntity(ChatTableEntity entity)
+    {
+        return new ChatInfo
+        {
+            ChatId = new ChatId
+            {
+                System = entity.PartitionKey,
+                Id = long.Parse(entity.RowKey),
+                Type = entity.Type ?? "",
+            },
+            Tags = ParseTagsString(entity.Tags)
+        };
     }
 
     private class ChatTableEntity : BaseTableEntity

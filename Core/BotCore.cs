@@ -30,8 +30,33 @@ public class BotCore(
     private readonly Dictionary<string, ISubsystem> _subsystems = new(subsystems);
     private readonly ICommandHandler[] _commandHandlers = [.. commandHandlers];
     private readonly ConcurrentDictionary<ChatId, ChatClient> _chatClients = [];
+    private IChatTagManager? chatTagManager;
 
-    private BotCoreState _state = BotCoreState.NotInitialized;
+    public BotCoreState State { get; private set; } = BotCoreState.NotInitialized;
+
+    public IChatTagManager GetChatTagManager()
+    {
+        chatTagManager ??= new ChatTagManager(
+            chatStorage,
+            reloadChatClientFunc: ReloadChatClientAsync
+        );
+
+        return chatTagManager;
+    }
+
+    private async Task ReloadChatClientAsync(ChatId chatId)
+    {
+        var properties = _chatClients.TryGetValue(chatId, out var current)
+            ? current.Properties
+            : [];
+
+        ChatInfo chatInfo = await chatStorage.GetChatAsync(chatId);
+        _chatClients[chatId] = new ChatClient
+        {
+            ChatInfo = chatInfo,
+            Properties = properties
+        };
+    }
 
     public static string Version { get; } = typeof(BotCore).Assembly.GetName().Version?.ToString() switch
     {
@@ -45,22 +70,22 @@ public class BotCore(
     {
         lock (_lock)
         {
-            if (_state is BotCoreState.NotInitialized)
+            if (State is BotCoreState.NotInitialized)
             {
                 Initialize();
             }
 
-            if (_state is not (BotCoreState.Initialized or BotCoreState.Stopped))
+            if (State is not (BotCoreState.Initialized or BotCoreState.Stopped))
             {
                 throw new InvalidOperationException(
                     string.Format(
                         ExceptionMessages.CannotStartBotCoreInState_1,
-                        _state
+                        State
                     )
                 );
             }
 
-            _state = BotCoreState.Starting;
+            State = BotCoreState.Starting;
         }
 
         bool atLeastOneSubsystemStarted = false;
@@ -88,7 +113,7 @@ public class BotCore(
             }
         }
 
-        _state = atLeastOneSubsystemStarted
+        State = atLeastOneSubsystemStarted
             ? BotCoreState.Started
             : BotCoreState.Stopped;
     }
@@ -97,7 +122,7 @@ public class BotCore(
     {
         lock (_lock)
         {
-            if (_state is BotCoreState.Stopped)
+            if (State is BotCoreState.Stopped)
             {
                 logger.LogInformation(
                     LogMessages.BotCoreAlreadyStopped_0
@@ -105,17 +130,17 @@ public class BotCore(
                 return;
             }
 
-            if (_state is not BotCoreState.Started)
+            if (State is not BotCoreState.Started)
             {
                 throw new InvalidOperationException(
                     string.Format(
                         ExceptionMessages.CannotStopBotCoreInState_1,
-                        _state
+                        State
                     )
                 );
             }
 
-            _state = BotCoreState.Stopping;
+            State = BotCoreState.Stopping;
         }
 
         bool atLeastOneSubsystemFailedToStop = false;
@@ -143,7 +168,7 @@ public class BotCore(
             }
         }
 
-        _state = atLeastOneSubsystemFailedToStop
+        State = atLeastOneSubsystemFailedToStop
             ? BotCoreState.Started
             : BotCoreState.Stopped;
     }
@@ -209,14 +234,14 @@ public class BotCore(
     {
         lock (_lock)
         {
-            if (_state != BotCoreState.NotInitialized)
+            if (State != BotCoreState.NotInitialized)
             {
                 throw new InvalidOperationException(
                     ExceptionMessages.BotCoreAlreadyInitialized_0
                 );
             }
 
-            _state = BotCoreState.Initializing;
+            State = BotCoreState.Initializing;
         }
 
         try
@@ -256,11 +281,11 @@ public class BotCore(
                 );
             }
 
-            _state = BotCoreState.Initialized;
+            State = BotCoreState.Initialized;
         }
         catch
         {
-            _state = BotCoreState.NotInitialized;
+            State = BotCoreState.NotInitialized;
             throw;
         }
     }
@@ -378,11 +403,11 @@ public class BotCore(
                 }
             };
 
-            Feedback send = new(this, context.Chat.Id);
+            Feedback feedback = new(this, context.Chat.Id);
 
             foreach (var handler in handlers)
             {
-                if (await handler.HandleAsync(context, send))
+                if (await handler.HandleAsync(context, feedback))
                 {
                     if (options.LogCommands && handler.Definition.LogHandling)
                     {
@@ -467,7 +492,7 @@ public class BotCore(
         {
             return args.Message.Split(" ", 2, StringSplitOptions.TrimEntries) is [{ } command, { } tail]
                 ? (command, tail)
-                : (args.Message, null);
+                : (args.Message.Trim(), null);
         }
 
         ICommandHandler[] FindMatchedHandlers(string command, bool hasTail, bool clientIsEligible)

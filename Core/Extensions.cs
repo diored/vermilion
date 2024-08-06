@@ -13,12 +13,21 @@ public static class Extensions
         Action<BotCoreBuilder> setup
     )
     {
-        return services.AddHostedService(serviceProvider =>
-        {
-            var botCore = BotCore.CreateBuilder(serviceProvider);
-            setup?.Invoke(botCore);
-            return botCore.Build();
-        });
+        return services
+            .AddHostedService(serviceProvider =>
+            {
+                var botCore = BotCore.CreateBuilder(serviceProvider);
+                setup?.Invoke(botCore);
+                return botCore.Build();
+            })
+            .AddSingleton(serviceProvider =>
+            {
+                BotCore botCore = serviceProvider.GetServices<IHostedService>()
+                    .OfType<BotCore>()
+                    .Single();
+
+                return botCore.GetChatTagManager();
+            });
     }
 
     public static IServiceProvider SetupDailyJob(

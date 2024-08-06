@@ -1,6 +1,6 @@
 namespace DioRed.Vermilion;
 
-internal enum BotCoreState
+public enum BotCoreState
 {
     NotInitialized,
     Initializing,
