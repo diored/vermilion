@@ -19,14 +19,6 @@ public static class Extensions
                 var botCore = BotCore.CreateBuilder(serviceProvider);
                 setup?.Invoke(botCore);
                 return botCore.Build();
-            })
-            .AddSingleton(serviceProvider =>
-            {
-                BotCore botCore = serviceProvider.GetServices<IHostedService>()
-                    .OfType<BotCore>()
-                    .Single();
-
-                return botCore.GetChatTagManager();
             });
     }
 

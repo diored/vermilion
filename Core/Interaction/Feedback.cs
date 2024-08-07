@@ -71,6 +71,23 @@ public class Feedback(
         );
     }
 
+    public async Task AddTagAsync(string tag)
+    {
+        await botCore.AddTagAsync(
+            receiver,
+            tag
+        );
+    }
+
+
+    public async Task RemoveTagAsync(string tag)
+    {
+        await botCore.RemoveTagAsync(
+            receiver,
+            tag
+        );
+    }
+
     public Feedback To(ChatId chatId) => new(botCore, Receiver.Chat(chatId));
     public Feedback To(Func<ChatInfo, bool> filter) => new(botCore, Receiver.Broadcast(filter));
     public Feedback ToEveryone() => new(botCore, Receiver.Everyone);

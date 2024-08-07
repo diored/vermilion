@@ -30,33 +30,8 @@ public class BotCore(
     private readonly Dictionary<string, ISubsystem> _subsystems = new(subsystems);
     private readonly ICommandHandler[] _commandHandlers = [.. commandHandlers];
     private readonly ConcurrentDictionary<ChatId, ChatClient> _chatClients = [];
-    private IChatTagManager? chatTagManager;
 
     public BotCoreState State { get; private set; } = BotCoreState.NotInitialized;
-
-    public IChatTagManager GetChatTagManager()
-    {
-        chatTagManager ??= new ChatTagManager(
-            chatStorage,
-            reloadChatClientFunc: ReloadChatClientAsync
-        );
-
-        return chatTagManager;
-    }
-
-    private async Task ReloadChatClientAsync(ChatId chatId)
-    {
-        var properties = _chatClients.TryGetValue(chatId, out var current)
-            ? current.Properties
-            : [];
-
-        ChatInfo chatInfo = await chatStorage.GetChatAsync(chatId);
-        _chatClients[chatId] = new ChatClient
-        {
-            ChatInfo = chatInfo,
-            Properties = properties
-        };
-    }
 
     public static string Version { get; } = typeof(BotCore).Assembly.GetName().Version?.ToString() switch
     {
@@ -227,6 +202,50 @@ public class BotCore(
             );
 
             await ProcessResultAsync(postResult, chat, content);
+        }
+    }
+
+    internal async Task AddTagAsync(Receiver receiver, string tag)
+    {
+        ChatInfo[] chats = GetChats(receiver);
+
+        foreach (ChatInfo chat in chats)
+        {
+            if (chat.Tags.Contains(tag))
+            {
+                continue;
+            }
+
+            ChatInfo updatedChat = new ChatInfo
+            {
+                ChatId = chat.ChatId,
+                Tags = [.. chat.Tags, tag]
+            };
+
+            await chatStorage.UpdateChatAsync(updatedChat);
+            await ReloadChatClientAsync(chat.ChatId);
+        }
+    }
+
+    internal async Task RemoveTagAsync(Receiver receiver, string tag)
+    {
+        ChatInfo[] chats = GetChats(receiver);
+
+        foreach (ChatInfo chat in chats)
+        {
+            if (!chat.Tags.Contains(tag))
+            {
+                continue;
+            }
+
+            ChatInfo updatedChat = new ChatInfo
+            {
+                ChatId = chat.ChatId,
+                Tags = [.. chat.Tags.Except([tag])]
+            };
+
+            await chatStorage.UpdateChatAsync(updatedChat);
+            await ReloadChatClientAsync(chat.ChatId);
         }
     }
 
@@ -527,6 +546,20 @@ public class BotCore(
                     : MessageArgs.Empty
             };
         }
+    }
+
+    private async Task ReloadChatClientAsync(ChatId chatId)
+    {
+        var properties = _chatClients.TryGetValue(chatId, out var current)
+            ? current.Properties
+            : [];
+
+        ChatInfo chatInfo = await chatStorage.GetChatAsync(chatId);
+        _chatClients[chatId] = new ChatClient
+        {
+            ChatInfo = chatInfo,
+            Properties = properties
+        };
     }
 
     #region Static builder methods
