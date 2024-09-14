@@ -7,5 +7,6 @@ internal enum TelegramException
     GroupUpgraded,
     ChatNotFound,
     TooManyRequests,
-    SocketException
+    SocketException,
+    NotEnoughRights
 }

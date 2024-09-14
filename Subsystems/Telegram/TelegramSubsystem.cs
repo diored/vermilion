@@ -349,6 +349,15 @@ public class TelegramSubsystem : ISubsystem
                 return TelegramException.BotBlocked;
             }
 
+            if (ex.Message.Contains("not enough rights"))
+            {
+                _logger.LogInformation(
+                    LogMessages.NotEnoughRights_1,
+                    internalId
+                );
+                return TelegramException.NotEnoughRights;
+            }
+
             if (ex.Message.Contains("group chat was upgraded to a supergroup chat"))
             {
                 _logger.LogInformation(
@@ -393,6 +402,7 @@ public class TelegramSubsystem : ISubsystem
             TelegramException.Unexpected => PostResult.UnexpectedException,
             TelegramException.BotBlocked or
             TelegramException.ChatNotFound or
+            TelegramException.NotEnoughRights or
             TelegramException.GroupUpgraded => PostResult.ChatAccessDenied,
             _ => PostResult.SubsystemFailure
         };
