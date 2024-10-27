@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>DioRed.Vermilion.Hosting</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Authors>DioRED</Authors>
+    <Version>12.0.1</Version>
+    <PackageId>DioRed.Vermilion.Hosting</PackageId>
+    <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
+    <PackageIcon>packageIcon.png</PackageIcon>
+    <Description>Vermilion chat bot hosting extensions.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\Assets\packageIcon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DioRed.Common.Logging" Version="4.5.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Configuration)' == 'DebugEngine' ">
+    <ProjectReference Include="..\Core\Vermilion.Core.csproj" />
+    <ProjectReference Include="..\ChatStorage\AzureTable\Vermilion.ChatStorage.AzureTable.csproj" />
+    <ProjectReference Include="..\Subsystems\Telegram\Vermilion.Subsystems.Telegram.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Configuration)' != 'DebugEngine' ">
+    <PackageReference Include="DioRed.Vermilion.Core" Version="12.0.0" />
+    <PackageReference Include="DioRed.Vermilion.ChatStorage.AzureTable" Version="12.0.0" />
+    <PackageReference Include="DioRed.Vermilion.Telegram" Version="12.0.0" />
+  </ItemGroup>
+
+</Project>
