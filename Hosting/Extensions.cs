@@ -17,7 +17,8 @@ public static class Extensions
         this IHostBuilder hostBuilder,
         string botName,
         Action<HostBuilderContext, IServiceCollection>? configureServices = null,
-        IEnumerable<Assembly>? assembliesWithHandlers = null
+        IEnumerable<Assembly>? assembliesWithHandlers = null,
+        Action<BotCoreBuilder>? configureBuilder = null
     )
     {
         return hostBuilder
@@ -54,6 +55,8 @@ public static class Extensions
                 }
 
                 builder.AddTelegram();
+
+                configureBuilder?.Invoke(builder);
             });
         })
         .Build();
