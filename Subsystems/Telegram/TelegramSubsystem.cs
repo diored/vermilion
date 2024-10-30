@@ -54,11 +54,22 @@ public class TelegramSubsystem : ISubsystem
                     _ => "Unexpected"
                 };
 
-                _logger.LogError(
-                    exception,
-                    LogMessages.MessagePollingError_1,
-                    exceptionType
-                );
+                if (exception is RequestException &&
+                    exception.InnerException is HttpRequestException ex1 &&
+                    ex1.InnerException is IOException ex2 &&
+                    ex2.InnerException is SocketException ex3 &&
+                    ex3.Message.Contains("An existing connection was forcibly closed by the remote host"))
+                {
+                    _logger.LogWarning(LogMessages.ConnectionClosed_0);
+                }
+                else
+                {
+                    _logger.LogError(
+                        exception,
+                        LogMessages.MessagePollingError_1,
+                        exceptionType
+                    );
+                }
 
                 return Task.CompletedTask;
             },
