@@ -12,7 +12,7 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>12.1.1</Version>
+    <Version>12.1.2</Version>
     <PackageId>DioRed.Vermilion</PackageId>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
@@ -38,7 +38,7 @@
     <PackageReference Include="DioRed.Vermilion.ChatStorage.InMemory" Version="12.1.2" />
     <PackageReference Include="DioRed.Vermilion.ChatStorage.SqlServer" Version="12.1.1" />
     <PackageReference Include="DioRed.Vermilion.Telegram" Version="12.1.1" />
-    <PackageReference Include="DioRed.Vermilion.Hosting" Version="12.1.1" />
+    <PackageReference Include="DioRed.Vermilion.Hosting" Version="12.1.2" />
   </ItemGroup>
 
 </Project>

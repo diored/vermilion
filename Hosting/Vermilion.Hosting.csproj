@@ -11,7 +11,7 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>12.1.1</Version>
+    <Version>12.1.2</Version>
     <PackageId>DioRed.Vermilion.Hosting</PackageId>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
