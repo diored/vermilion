@@ -7,6 +7,7 @@ internal static class LogMessages
     public const string CustomGreeting_1 = "{Greeting}";
     public const string BotCoreAlreadyStopped_0 = "Bot core already stopped";
     public const string SubsystemStarted_1 = "{Subsystem} subsystem started";
+    public const string SubsystemStarted_2 = "{Subsystem} subsystem {Version} started";
     public const string SubsystemNotStarted_1 = "{Subsystem} subsystem not started";
     public const string SubsystemStopped_1 = "{Subsystem} subsystem stopped";
     public const string SubsystemNotStopped_1 = "{Subsystem} subsystem not stopped";

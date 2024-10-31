@@ -70,4 +70,15 @@ public static class Extensions
 
         return services;
     }
+
+    public static string Normalize(this Version? version)
+    {
+        return version?.ToString() switch
+        {
+            null => "0.0",
+            var v when v.EndsWith(".0.0") => v[..^4],
+            var v when v.EndsWith(".0") => v[..^2],
+            var v => v
+        };
+    }
 }

@@ -14,6 +14,8 @@ namespace DioRed.Vermilion.Subsystems.Telegram;
 
 public class TelegramSubsystem : ISubsystem
 {
+    private readonly static string _version = typeof(TelegramSubsystem).Assembly.GetName().Version.Normalize();
+
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly TelegramBotClient _telegramBotClient;
     private readonly ILogger<TelegramSubsystem> _logger;
@@ -33,6 +35,8 @@ public class TelegramSubsystem : ISubsystem
         _botInfo = _telegramBotClient.GetMeAsync().GetAwaiter().GetResult();
         _superAdmins = options.SuperAdmins;
     }
+
+    public string Version => _version;
 
     public Task StartAsync(CancellationToken cancellationToken)
     {

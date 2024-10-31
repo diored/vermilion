@@ -33,13 +33,7 @@ public class BotCore(
 
     public BotCoreState State { get; private set; } = BotCoreState.NotInitialized;
 
-    public static string Version { get; } = typeof(BotCore).Assembly.GetName().Version?.ToString() switch
-    {
-        null => "0.0",
-        var v when v.EndsWith(".0.0") => v[..^4],
-        var v when v.EndsWith(".0") => v[..^2],
-        var v => v
-    };
+    public static string Version { get; } = typeof(BotCore).Assembly.GetName().Version.Normalize();
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
@@ -73,10 +67,21 @@ public class BotCore(
 
                 atLeastOneSubsystemStarted = true;
 
-                logger.LogInformation(
-                    LogMessages.SubsystemStarted_1,
-                    subsystem.Key
-                );
+                if (subsystem.Value.Version is { } version)
+                {
+                    logger.LogInformation(
+                        LogMessages.SubsystemStarted_2,
+                        subsystem.Key,
+                        version
+                    );
+                }
+                else
+                {
+                    logger.LogInformation(
+                        LogMessages.SubsystemStarted_1,
+                        subsystem.Key
+                    );
+                }
             }
             catch (Exception ex)
             {

@@ -11,7 +11,7 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>12.0.2</Version>
+    <Version>12.1.0</Version>
     <PackageId>DioRed.Vermilion.Hosting</PackageId>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
@@ -34,9 +34,9 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' != 'DebugEngine' ">
-    <PackageReference Include="DioRed.Vermilion.Core" Version="12.0.0" />
-    <PackageReference Include="DioRed.Vermilion.ChatStorage.AzureTable" Version="12.0.0" />
-    <PackageReference Include="DioRed.Vermilion.Telegram" Version="12.0.0" />
+    <PackageReference Include="DioRed.Vermilion.Core" Version="12.1.0" />
+    <PackageReference Include="DioRed.Vermilion.ChatStorage.AzureTable" Version="12.1.0" />
+    <PackageReference Include="DioRed.Vermilion.Telegram" Version="12.1.0" />
   </ItemGroup>
 
 </Project>
