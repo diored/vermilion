@@ -11,7 +11,7 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>12.1.0</Version>
+    <Version>12.1.1</Version>
     <PackageId>DioRed.Vermilion.Hosting</PackageId>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
@@ -23,20 +23,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DioRed.Common.Logging" Version="4.5.0" />
+    <PackageReference Include="DioRed.Common.Logging" Version="4.5.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'DebugEngine' ">
-    <ProjectReference Include="..\Core\Vermilion.Core.csproj" />
     <ProjectReference Include="..\ChatStorage\AzureTable\Vermilion.ChatStorage.AzureTable.csproj" />
     <ProjectReference Include="..\Subsystems\Telegram\Vermilion.Subsystems.Telegram.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' != 'DebugEngine' ">
-    <PackageReference Include="DioRed.Vermilion.Core" Version="12.1.0" />
-    <PackageReference Include="DioRed.Vermilion.ChatStorage.AzureTable" Version="12.1.0" />
-    <PackageReference Include="DioRed.Vermilion.Telegram" Version="12.1.0" />
+    <PackageReference Include="DioRed.Vermilion.ChatStorage.AzureTable" Version="12.1.2" />
+    <PackageReference Include="DioRed.Vermilion.Telegram" Version="12.1.1" />
   </ItemGroup>
 
 </Project>
