@@ -31,14 +31,17 @@ public static class Extensions
         string? id = null
     )
     {
-        BotCore botCore = services.GetServices<IHostedService>()
-            .OfType<BotCore>()
-            .Single();
-
         ILogger<BotCore> logger = services.GetRequiredService<ILogger<BotCore>>();
 
         var job = Job.SetupDaily(
-            () => action(services, botCore),
+            () =>
+            {
+                BotCore botCore = services.GetServices<IHostedService>()
+                    .OfType<BotCore>()
+                    .Single();
+
+                return action(services, botCore);
+            },
             timeOfDay,
             timeZoneOffset,
             repeatNumber,

@@ -25,7 +25,7 @@ public class BotCore(
     Func<ChatId, bool> chatClientEligibility
 ) : IHostedService
 {
-    public static readonly object _lock = new();
+    private static readonly object _lock = new();
 
     private readonly Dictionary<string, ISubsystem> _subsystems = new(subsystems);
     private readonly ICommandHandler[] _commandHandlers = [.. commandHandlers];

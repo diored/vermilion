@@ -5,9 +5,24 @@ namespace DioRed.Vermilion.Handling;
 
 public class SimpleCommandHandler(
     CommandDefinition commandDefinition,
-    Func<MessageHandlingContext, Feedback, Task> handle
+    Func<MessageHandlingContext, Feedback, Task<bool>> handle
 ) : ICommandHandler
 {
+    public SimpleCommandHandler(
+        CommandDefinition commandDefinition,
+        Func<MessageHandlingContext, Feedback, Task> handle
+    ) : this(
+            commandDefinition,
+            async (context, feedback) =>
+            {
+                await handle(context, feedback);
+
+                return true;
+            }
+        )
+    {
+    }
+
     public CommandDefinition Definition => commandDefinition;
 
     public async Task<bool> HandleAsync(
@@ -15,8 +30,6 @@ public class SimpleCommandHandler(
         Feedback send
     )
     {
-        await handle(context, send);
-
-        return true;
+        return await handle(context, send);
     }
 }

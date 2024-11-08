@@ -17,7 +17,7 @@ public static class Extensions
         this IHostBuilder hostBuilder,
         string botName,
         Action<HostBuilderContext, IServiceCollection>? configureServices = null,
-        IEnumerable<Assembly>? assembliesWithHandlers = null,
+        IEnumerable<Assembly>? assemblies = null,
         Action<BotCoreBuilder>? configureBuilder = null
     )
     {
@@ -47,11 +47,12 @@ public static class Extensions
                     accountKey: ReadRequired(context.Configuration, Defaults.AzureAccountKeyConfigurationKey)
                 ));
 
-                assembliesWithHandlers ??= [Assembly.GetEntryAssembly()!];
+                assemblies ??= [Assembly.GetEntryAssembly()!];
 
-                foreach (var assembly in assembliesWithHandlers)
+                foreach (var assembly in assemblies)
                 {
                     builder.AddCommandHandlersFromAssembly(assembly);
+                    builder.AddDailyJobsFromAssembly(assembly);
                 }
 
                 builder.AddTelegram();

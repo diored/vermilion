@@ -32,7 +32,7 @@ public class TelegramSubsystem : ISubsystem
         _telegramBotClient = new TelegramBotClient(options.BotToken);
         _logger = loggerFactory.CreateLogger<TelegramSubsystem>();
 
-        _botInfo = _telegramBotClient.GetMeAsync().GetAwaiter().GetResult();
+        _botInfo = _telegramBotClient.GetMe().GetAwaiter().GetResult();
         _superAdmins = options.SuperAdmins;
     }
 
@@ -41,14 +41,14 @@ public class TelegramSubsystem : ISubsystem
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _telegramBotClient.StartReceiving(
-            updateHandler: (_, update, cancellationToken) => update switch
+            updateHandler: (_, update, token) => update switch
             {
-                { Message: { } message } => HandleMessageReceived(message, cancellationToken),
-                { EditedMessage: { } message } => HandleMessageReceived(message, cancellationToken),
-                { CallbackQuery: { } callbackQuery } => HandleCallbackQueryReceived(callbackQuery, cancellationToken),
+                { Message: { } message } => HandleMessageReceived(message, token),
+                { EditedMessage: { } message } => HandleMessageReceived(message, token),
+                { CallbackQuery: { } callbackQuery } => HandleCallbackQueryReceived(callbackQuery, token),
                 _ => Task.CompletedTask
             },
-            pollingErrorHandler: (_, exception, _) =>
+            errorHandler: (_, exception, _) =>
             {
                 string exceptionType = exception switch
                 {
@@ -234,7 +234,7 @@ public class TelegramSubsystem : ISubsystem
         }
         else
         {
-            ChatMember chatMember = await _telegramBotClient.GetChatMemberAsync(
+            ChatMember chatMember = await _telegramBotClient.GetChatMember(
                 chat.Id,
                 userId,
                 cancellationToken
@@ -252,10 +252,10 @@ public class TelegramSubsystem : ISubsystem
     private async Task SendTextAsync(
         long internalId,
         string text,
-        ParseMode? parseMode = null
+        ParseMode parseMode = ParseMode.None
     )
     {
-        _ = await _telegramBotClient.SendTextMessageAsync(
+        _ = await _telegramBotClient.SendMessage(
             internalId,
             text,
             parseMode: parseMode
@@ -267,7 +267,7 @@ public class TelegramSubsystem : ISubsystem
         InputFile file
     )
     {
-        _ = await _telegramBotClient.SendPhotoAsync(
+        _ = await _telegramBotClient.SendPhoto(
             internalId,
             file
         );

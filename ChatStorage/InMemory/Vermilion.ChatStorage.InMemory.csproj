@@ -13,7 +13,7 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
     <PackageId>DioRed.Vermilion.ChatStorage.InMemory</PackageId>
-    <Version>12.1.2</Version>
+    <Version>12.2.0</Version>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
     <Description>In-memory chat storage for the Vermilion chat bot engine.</Description>
@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' != 'DebugEngine' ">
-    <PackageReference Include="DioRed.Vermilion.Core" Version="12.1.1" />
+    <PackageReference Include="DioRed.Vermilion.Core" Version="12.2.0" />
   </ItemGroup>
 
 </Project>
