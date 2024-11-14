@@ -12,7 +12,7 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>12.2.0</Version>
+    <Version>12.3.0</Version>
     <PackageId>DioRed.Vermilion</PackageId>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
@@ -23,22 +23,27 @@
     <None Include="..\Assets\packageIcon.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(Configuration)' == 'DebugEngine' ">
-    <ProjectReference Include="..\Core\Vermilion.Core.csproj" />
-    <ProjectReference Include="..\ChatStorage\AzureTable\Vermilion.ChatStorage.AzureTable.csproj" />
-    <ProjectReference Include="..\ChatStorage\InMemory\Vermilion.ChatStorage.InMemory.csproj" />
-    <ProjectReference Include="..\ChatStorage\SqlServer\Vermilion.ChatStorage.SqlServer.csproj" />
-    <ProjectReference Include="..\Subsystems\Telegram\Vermilion.Subsystems.Telegram.csproj" />
-    <ProjectReference Include="..\Hosting\Vermilion.Hosting.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(Configuration)' != 'DebugEngine' ">
-    <PackageReference Include="DioRed.Vermilion.Core" Version="12.2.0" />
-    <PackageReference Include="DioRed.Vermilion.ChatStorage.AzureTable" Version="12.2.0" />
-    <PackageReference Include="DioRed.Vermilion.ChatStorage.InMemory" Version="12.2.0" />
-    <PackageReference Include="DioRed.Vermilion.ChatStorage.SqlServer" Version="12.2.0" />
-    <PackageReference Include="DioRed.Vermilion.Telegram" Version="12.2.0" />
-    <PackageReference Include="DioRed.Vermilion.Hosting" Version="12.2.0" />
-  </ItemGroup>
+  <Choose>
+      <When Condition=" '$(Configuration)' == 'DebugEngine' ">
+          <ItemGroup>
+            <ProjectReference Include="..\Core\Vermilion.Core.csproj" />
+            <ProjectReference Include="..\ChatStorage\AzureTable\Vermilion.ChatStorage.AzureTable.csproj" />
+            <ProjectReference Include="..\ChatStorage\InMemory\Vermilion.ChatStorage.InMemory.csproj" />
+            <ProjectReference Include="..\ChatStorage\SqlServer\Vermilion.ChatStorage.SqlServer.csproj" />
+            <ProjectReference Include="..\Subsystems\Telegram\Vermilion.Subsystems.Telegram.csproj" />
+            <ProjectReference Include="..\Hosting\Vermilion.Hosting.csproj" />
+          </ItemGroup>
+      </When>
+      <Otherwise>
+          <ItemGroup>
+            <PackageReference Include="DioRed.Vermilion.Core" Version="12.3.0" />
+            <PackageReference Include="DioRed.Vermilion.ChatStorage.AzureTable" Version="12.3.0" />
+            <PackageReference Include="DioRed.Vermilion.ChatStorage.InMemory" Version="12.3.0" />
+            <PackageReference Include="DioRed.Vermilion.ChatStorage.SqlServer" Version="12.3.0" />
+            <PackageReference Include="DioRed.Vermilion.Telegram" Version="12.3.0" />
+            <PackageReference Include="DioRed.Vermilion.Hosting" Version="12.2.0" />
+          </ItemGroup>
+      </Otherwise>
+  </Choose>
 
 </Project>
