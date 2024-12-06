@@ -12,7 +12,7 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>12.3.0</Version>
+    <Version>12.3.1</Version>
     <PackageId>DioRed.Vermilion.Hosting</PackageId>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
@@ -20,11 +20,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\Assets\packageIcon.png" Pack="true" PackagePath="" />
+    <None Include="..\Assets\packageIcon.png" Pack="true" PackagePath="." />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DioRed.Common.Logging" Version="4.6.0" />
+    <PackageReference Include="DioRed.Common.Logging" Version="4.6.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
   </ItemGroup>
 
@@ -38,9 +38,9 @@
       </When>
       <Otherwise>
           <ItemGroup>
-            <PackageReference Include="DioRed.Vermilion.ChatStorage.AzureTable" Version="12.3.0" />
-            <PackageReference Include="DioRed.Vermilion.Core" Version="12.3.0" />
-            <PackageReference Include="DioRed.Vermilion.Telegram" Version="12.3.0" />
+            <PackageReference Include="DioRed.Vermilion.ChatStorage.AzureTable" Version="12.3.1" />
+            <PackageReference Include="DioRed.Vermilion.Core" Version="12.3.1" />
+            <PackageReference Include="DioRed.Vermilion.Telegram" Version="12.3.1" />
           </ItemGroup>
       </Otherwise>
   </Choose>

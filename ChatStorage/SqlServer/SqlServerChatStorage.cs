@@ -9,49 +9,51 @@ using Microsoft.Data.SqlClient;
 
 namespace DioRed.Vermilion.ChatStorage;
 
-public partial class SqlServerChatStorage(
-    string connectionString,
-    string table = "Chats",
-    string schema = "dbo"
-) : IChatStorage
+public partial class SqlServerChatStorage : IChatStorage
 {
-    #region Ctor validation
+    private readonly string _connectionString;
+    private readonly string _table;
+    private readonly string _schema;
 
-#pragma warning disable IDE0052 // Remove unread private members
-    private readonly Unit __validator = Validate(schema, table);
-#pragma warning restore IDE0052 // Remove unread private members
-
-    private static Unit Validate(string schema, string table)
+    public SqlServerChatStorage(
+        string connectionString,
+        string table = "Chats",
+        string schema = "dbo"
+    )
     {
-        ValidateIdentifier("Schema", schema);
-        ValidateIdentifier("Table", table);
+        ArgumentException.ThrowIfNullOrWhiteSpace(table, nameof(table));
+        ArgumentException.ThrowIfNullOrWhiteSpace(schema, nameof(schema));
 
-        return default;
-    }
-
-    private static void ValidateIdentifier(string name, string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
+        if (!SimpleIdentifierRegex().IsMatch(schema))
         {
-            throw new InvalidOperationException($"{name} couldn't be empty");
+            throw new ArgumentException(
+                "Schema name contains unexpected characters",
+                nameof(schema)
+            );
         }
 
-        if (!SimpleIdentifierRegex().IsMatch(value))
+        if (!SimpleIdentifierRegex().IsMatch(table))
         {
-            throw new InvalidOperationException($"{name} contains unexpected characters");
+            throw new ArgumentException(
+                "Table name contains unexpected characters",
+                nameof(table)
+            );
         }
+
+        _connectionString = connectionString;
+        _table = table;
+        _schema = schema;
     }
-    #endregion
 
     public async Task AddChatAsync(ChatInfo chatInfo, string title)
     {
-        using SqlConnection db = new(connectionString);
+        await using SqlConnection db = new(_connectionString);
 
         await EnsureTableExistsAsync(db);
 
         await db.ExecuteAsync(
             $"""
-            INSERT INTO [{schema}].[{table}]
+            INSERT INTO [{_schema}].[{_table}]
             ([System], [Id], [Type], [Title], [Tags])
             VALUES
             (@System, @Id, @Type, @Title, @Tags)
@@ -69,14 +71,14 @@ public partial class SqlServerChatStorage(
 
     public async Task<ChatInfo> GetChatAsync(ChatId chatId)
     {
-        using SqlConnection db = new(connectionString);
+        await using SqlConnection db = new(_connectionString);
 
         await EnsureTableExistsAsync(db);
 
         ChatInfoDto? dto = await db.QueryFirstAsync<ChatInfoDto>(
             $"""
             SELECT TOP 1 [System], [Id], [Type], [Tags]
-            FROM [{schema}].[{table}]
+            FROM [{_schema}].[{_table}]
             WHERE [System] = @System
                 AND [Id] = @Id
             """,
@@ -100,14 +102,14 @@ public partial class SqlServerChatStorage(
 
     public async Task<ChatInfo[]> GetChatsAsync()
     {
-        using SqlConnection db = new(connectionString);
+        await using SqlConnection db = new(_connectionString);
 
         await EnsureTableExistsAsync(db);
 
         IEnumerable<ChatInfoDto> dtos = await db.QueryAsync<ChatInfoDto>(
             $"""
             SELECT [System], [Id], [Type], [Tags]
-            FROM [{schema}].[{table}]
+            FROM [{_schema}].[{_table}]
             """
         );
 
@@ -116,11 +118,11 @@ public partial class SqlServerChatStorage(
 
     public async Task RemoveChatAsync(ChatId chatId)
     {
-        using SqlConnection db = new(connectionString);
+        await using SqlConnection db = new(_connectionString);
 
         await db.ExecuteAsync(
             $"""
-            DELETE FROM [{schema}].[{table}]
+            DELETE FROM [{_schema}].[{_table}]
             WHERE [System] = @System
                 AND [Id] = @Id
             """,
@@ -134,11 +136,11 @@ public partial class SqlServerChatStorage(
 
     public async Task UpdateChatAsync(ChatInfo chatInfo)
     {
-        using SqlConnection db = new(connectionString);
+        await using SqlConnection db = new(_connectionString);
 
         await db.ExecuteAsync(
             $"""
-            UPDATE [{schema}].[{table}]
+            UPDATE [{_schema}].[{_table}]
             SET [Tags] = @Tags
             WHERE [System] = @System
                 AND [Id] = @Id
@@ -159,16 +161,16 @@ public partial class SqlServerChatStorage(
             IF NOT EXISTS (
                 SELECT 'X'
                 FROM INFORMATION_SCHEMA.TABLES
-                WHERE TABLE_NAME = '{table}'
-                    AND TABLE_SCHEMA = '{schema}'
+                WHERE TABLE_NAME = '{_table}'
+                    AND TABLE_SCHEMA = '{_schema}'
             )
             BEGIN
-                CREATE TABLE [{schema}].[{table}] (
+                CREATE TABLE [{_schema}].[{_table}] (
                     [System] [nvarchar](20) NOT NULL,
                     [Id] bigint NOT NULL,
                     [Type] [nvarchar](50) NOT NULL,
                     [Title] [nvarchar](250) NOT NULL,
-                  CONSTRAINT [PK_{table}] PRIMARY KEY CLUSTERED
+                  CONSTRAINT [PK_{_table}] PRIMARY KEY CLUSTERED
                   (
                     [System] ASC,
                     [Id] ASC

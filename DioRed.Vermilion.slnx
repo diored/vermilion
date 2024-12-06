@@ -1,0 +1,20 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="DebugEngine" />
+    <BuildType Name="Release" />
+  </Configurations>
+  <Folder Name="/ChatStorage/">
+    <Project Path="ChatStorage/AzureTable/Vermilion.ChatStorage.AzureTable.csproj" />
+    <Project Path="ChatStorage/InMemory/Vermilion.ChatStorage.InMemory.csproj" />
+    <Project Path="ChatStorage/SqlServer/Vermilion.ChatStorage.SqlServer.csproj" />
+  </Folder>
+  <Folder Name="/Subsystems/">
+    <Project Path="Subsystems/Telegram/Vermilion.Subsystems.Telegram.csproj" />
+  </Folder>
+  <Project Path="Complete/Vermilion.Complete.csproj" />
+  <Project Path="Core/Vermilion.Core.csproj">
+    <BuildType Solution="DebugEngine|*" Project="Debug" />
+  </Project>
+  <Project Path="Hosting/Vermilion.Hosting.csproj" />
+</Solution>

@@ -61,10 +61,9 @@ public class TelegramSubsystem : ISubsystem
                 if (exception is RequestException &&
                     exception.InnerException is HttpRequestException ex1 &&
                     ex1.InnerException is IOException ex2 &&
-                    ex2.InnerException is SocketException ex3 &&
-                    ex3.Message.Contains("An existing connection was forcibly closed by the remote host"))
+                    ex2.InnerException is SocketException ex3)
                 {
-                    _logger.LogWarning(LogMessages.ConnectionClosed_0);
+                    _logger.LogWarning("Socket exception: {Message}", ex3.Message);
                 }
                 else
                 {
