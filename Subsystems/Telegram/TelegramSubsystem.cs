@@ -58,12 +58,9 @@ public class TelegramSubsystem : ISubsystem
                     _ => "Unexpected"
                 };
 
-                if (exception is RequestException &&
-                    exception.InnerException is HttpRequestException ex1 &&
-                    ex1.InnerException is IOException ex2 &&
-                    ex2.InnerException is SocketException ex3)
+                if (FindSocketException(exception) is { } socketException)
                 {
-                    _logger.LogWarning("Socket exception: {Message}", ex3.Message);
+                    _logger.LogWarning("Socket exception: {Message}", socketException.Message);
                 }
                 else
                 {
@@ -160,11 +157,6 @@ public class TelegramSubsystem : ISubsystem
             SenderRole = senderRole,
             SenderName = GetUserName(message.From)
         });
-    }
-
-    private static string GetUserName(User user)
-    {
-        return $"{user.FirstName} {user.LastName}".Trim();
     }
 
     private async Task HandleCallbackQueryReceived(
@@ -409,6 +401,21 @@ public class TelegramSubsystem : ISubsystem
         return TelegramException.Unexpected;
     }
 
+    private static SocketException? FindSocketException(Exception exception)
+    {
+        if (exception is SocketException socketException)
+        {
+            return socketException;
+        }
+
+        if (exception?.InnerException is null)
+        {
+            return null;
+        }
+
+        return FindSocketException(exception.InnerException);
+    }
+
     private static PostResult GetPostResult(TelegramException tgEx)
     {
         return tgEx switch
@@ -420,5 +427,10 @@ public class TelegramSubsystem : ISubsystem
             TelegramException.GroupUpgraded => PostResult.ChatAccessDenied,
             _ => PostResult.SubsystemFailure
         };
+    }
+
+    private static string GetUserName(User user)
+    {
+        return $"{user.FirstName} {user.LastName}".Trim();
     }
 }
