@@ -374,7 +374,8 @@ public class TelegramSubsystem : ISubsystem
                 return TelegramException.GroupUpgraded;
             }
 
-            if (ex.Message.Contains("chat not found"))
+            if (ex.Message.Contains("chat not found") ||
+                ex.Message.Contains("TOPIC_CLOSED"))
             {
                 _logger.LogInformation(
                     LogMessages.ChatNotFound_1,
