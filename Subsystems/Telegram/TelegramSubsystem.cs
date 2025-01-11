@@ -109,6 +109,12 @@ public class TelegramSubsystem : ISubsystem
         return await DoActionAsync(action, internalId);
     }
 
+    public bool IsSuperAdmin(ChatId chatId)
+    {
+        return chatId.System == TelegramDefaults.System
+            && _superAdmins.Contains(chatId.Id);
+    }
+
     protected virtual void OnMessagePosted(MessagePostedEventArgs e)
     {
         MessagePosted?.Invoke(this, e);

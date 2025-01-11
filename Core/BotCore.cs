@@ -508,7 +508,8 @@ public class BotCore(
                 Id = args.ChatId,
                 Title = args.ChatTitle,
                 Tags = chatClient.ChatInfo.Tags,
-                Properties = chatClient.Properties
+                Properties = chatClient.Properties,
+                Subsystem = _subsystems[chatClient.ChatInfo.ChatId.System]
             };
         }
 

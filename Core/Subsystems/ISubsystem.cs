@@ -11,4 +11,5 @@ public interface ISubsystem
     Task StartAsync(CancellationToken cancellationToken);
     Task StopAsync(CancellationToken cancellationToken);
     Task<PostResult> PostAsync(long internalId, IContent content);
+    bool IsSuperAdmin(ChatId chatId);
 }

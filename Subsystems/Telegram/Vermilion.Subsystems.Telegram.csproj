@@ -12,7 +12,7 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>12.3.3</Version>
+    <Version>12.4.0</Version>
     <PackageId>DioRed.Vermilion.Telegram</PackageId>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
@@ -36,7 +36,7 @@
       </When>
       <Otherwise>
           <ItemGroup>
-              <PackageReference Include="DioRed.Vermilion.Core" Version="12.3.1" />
+              <PackageReference Include="DioRed.Vermilion.Core" Version="12.4.0" />
           </ItemGroup>
       </Otherwise>
   </Choose>
