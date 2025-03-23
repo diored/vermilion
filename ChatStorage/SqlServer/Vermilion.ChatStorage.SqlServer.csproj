@@ -13,7 +13,7 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
     <PackageId>DioRed.Vermilion.ChatStorage.SqlServer</PackageId>
-    <Version>12.4.1</Version>
+    <Version>12.4.2</Version>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
     <Description>SQL Server based chat storage for the Vermilion chat bot engine.</Description>
@@ -26,7 +26,7 @@
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.66" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.1" />
-    <PackageReference Include="System.Text.Json" Version="9.0.1" />
+    <PackageReference Include="System.Text.Json" Version="9.0.3" />
   </ItemGroup>
 
   <Choose>
@@ -37,7 +37,7 @@
       </When>
       <Otherwise>
           <ItemGroup>
-              <PackageReference Include="DioRed.Vermilion.Core" Version="12.4.1" />
+              <PackageReference Include="DioRed.Vermilion.Core" Version="12.4.2" />
           </ItemGroup>
       </Otherwise>
   </Choose>
