@@ -1,4 +1,4 @@
-namespace DioRed.Vermilion.Subsystems.Telegram;
+namespace DioRed.Vermilion.Connectors.Telegram;
 
 internal enum TelegramException
 {

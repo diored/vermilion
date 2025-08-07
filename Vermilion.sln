@@ -15,9 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vermilion.ChatStorage.SqlSe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vermilion.ChatStorage.InMemory", "ChatStorage\InMemory\Vermilion.ChatStorage.InMemory.csproj", "{61769498-C79C-41D4-957E-E5EF2BC03082}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Subsystems", "Subsystems", "{D1DE8A9B-1DA8-4E0A-BC91-03978C9CCF33}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Connectors", "Connectors", "{D1DE8A9B-1DA8-4E0A-BC91-03978C9CCF33}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vermilion.Subsystems.Telegram", "Subsystems\Telegram\Vermilion.Subsystems.Telegram.csproj", "{DF0FB95F-DB89-4274-9213-9E80E5BA56CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vermilion.Connectors.Telegram", "Connectors\Telegram\Vermilion.Connectors.Telegram.csproj", "{DF0FB95F-DB89-4274-9213-9E80E5BA56CC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vermilion.Hosting", "Hosting\Vermilion.Hosting.csproj", "{BC088AB9-176F-4D8F-9DF8-1D08556375FA}"
 EndProject

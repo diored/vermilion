@@ -1,10 +1,10 @@
-namespace DioRed.Vermilion.Subsystems;
+namespace DioRed.Vermilion.Connectors;
 
 public enum PostResult
 {
     Success,
     ContentTypeNotSupported,
     ChatAccessDenied,
-    SubsystemFailure,
+    ConnectorFailure,
     UnexpectedException
 }

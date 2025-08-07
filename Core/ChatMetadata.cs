@@ -1,9 +1,9 @@
 namespace DioRed.Vermilion;
 
-public class ChatInfo
+public class ChatMetadata
 {
     public required ChatId ChatId { get; init; }
-    public string[] Tags { get; init; } = [];
+    public HashSet<string> Tags { get; init; } = [];
 
     public override string ToString()
     {

@@ -1,4 +1,4 @@
-namespace DioRed.Vermilion.Subsystems.Telegram.L10n;
+namespace DioRed.Vermilion.Connectors.Telegram.L10n;
 
 internal static class LogMessages
 {

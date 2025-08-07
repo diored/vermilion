@@ -1,4 +1,4 @@
-namespace DioRed.Vermilion.Subsystems;
+namespace DioRed.Vermilion.Connectors;
 
 public class MessagePostedEventArgs : EventArgs
 {

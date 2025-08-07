@@ -4,11 +4,16 @@ namespace DioRed.Vermilion.ChatStorage;
 
 public class InMemoryChatStorage : IChatStorage
 {
-    private readonly HashSet<ChatInfo> _chats = [];
+    private readonly HashSet<ChatMetadata> _chats = [];
 
-    public Task AddChatAsync(ChatInfo chatInfo, string title)
+    public Task AddChatAsync(ChatMetadata metadata)
     {
-        if (!_chats.Add(chatInfo))
+        return AddChatAsync(metadata, string.Empty);
+    }
+
+    public Task AddChatAsync(ChatMetadata metadata, string title)
+    {
+        if (!_chats.Add(metadata))
         {
             throw new InvalidOperationException(
                 ExceptionMessages.ChatAlreadyStored_0
@@ -18,12 +23,12 @@ public class InMemoryChatStorage : IChatStorage
         return Task.CompletedTask;
     }
 
-    public Task<ChatInfo> GetChatAsync(ChatId chatId)
+    public Task<ChatMetadata> GetChatAsync(ChatId chatId)
     {
         return Task.FromResult(_chats.First(chat => chat.ChatId == chatId));
     }
 
-    public Task<ChatInfo[]> GetChatsAsync()
+    public Task<ChatMetadata[]> GetChatsAsync()
     {
         return Task.FromResult(_chats.ToArray());
     }
@@ -35,20 +40,16 @@ public class InMemoryChatStorage : IChatStorage
         return Task.CompletedTask;
     }
 
-    public Task UpdateChatAsync(ChatInfo chatInfo)
+    public Task UpdateChatAsync(ChatMetadata metadata)
     {
-        ChatInfo? existing = _chats.FirstOrDefault(chat => chat.ChatId == chatInfo.ChatId);
-
-        if (existing is null)
-        {
-            throw new ArgumentException(
-                message: $"Chat {chatInfo.ChatId} not found",
-                paramName: nameof(chatInfo)
+        ChatMetadata? existing = _chats.FirstOrDefault(chat => chat.ChatId == metadata.ChatId)
+            ?? throw new ArgumentException(
+                message: $"Chat {metadata.ChatId} not found",
+                paramName: nameof(metadata)
             );
-        }
 
         _chats.Remove(existing);
-        _chats.Add(chatInfo);
+        _chats.Add(metadata);
 
         return Task.CompletedTask;
     }

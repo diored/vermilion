@@ -3,8 +3,6 @@ using System.Text.RegularExpressions;
 
 using Dapper;
 
-using DioRed.Common;
-
 using Microsoft.Data.SqlClient;
 
 namespace DioRed.Vermilion.ChatStorage;
@@ -12,16 +10,16 @@ namespace DioRed.Vermilion.ChatStorage;
 public partial class SqlServerChatStorage : IChatStorage
 {
     private readonly string _connectionString;
-    private readonly string _table;
+    private readonly string _tableName;
     private readonly string _schema;
 
     public SqlServerChatStorage(
         string connectionString,
-        string table = "Chats",
-        string schema = "dbo"
+        string tableName = Defaults.TableName,
+        string schema = Defaults.Schema
     )
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(table, nameof(table));
+        ArgumentException.ThrowIfNullOrWhiteSpace(tableName, nameof(tableName));
         ArgumentException.ThrowIfNullOrWhiteSpace(schema, nameof(schema));
 
         if (!SimpleIdentifierRegex().IsMatch(schema))
@@ -32,20 +30,25 @@ public partial class SqlServerChatStorage : IChatStorage
             );
         }
 
-        if (!SimpleIdentifierRegex().IsMatch(table))
+        if (!SimpleIdentifierRegex().IsMatch(tableName))
         {
             throw new ArgumentException(
                 "Table name contains unexpected characters",
-                nameof(table)
+                nameof(tableName)
             );
         }
 
         _connectionString = connectionString;
-        _table = table;
+        _tableName = tableName;
         _schema = schema;
     }
 
-    public async Task AddChatAsync(ChatInfo chatInfo, string title)
+    public Task AddChatAsync(ChatMetadata metadata)
+    {
+        return AddChatAsync(metadata, string.Empty);
+    }
+
+    public async Task AddChatAsync(ChatMetadata metadata, string title)
     {
         await using SqlConnection db = new(_connectionString);
 
@@ -53,23 +56,23 @@ public partial class SqlServerChatStorage : IChatStorage
 
         await db.ExecuteAsync(
             $"""
-            INSERT INTO [{_schema}].[{_table}]
+            INSERT INTO [{_schema}].[{_tableName}]
             ([System], [Id], [Type], [Title], [Tags])
             VALUES
             (@System, @Id, @Type, @Title, @Tags)
             """,
             new
             {
-                System = chatInfo.ChatId.System,
-                Id = chatInfo.ChatId.Id,
-                Type = chatInfo.ChatId.Type,
+                System = metadata.ChatId.ConnectorKey,
+                Id = metadata.ChatId.Id,
+                Type = metadata.ChatId.Type,
                 Title = title,
-                Tags = BuildTagsString(chatInfo.Tags)
+                Tags = BuildTagsString(metadata.Tags)
             }
         );
     }
 
-    public async Task<ChatInfo> GetChatAsync(ChatId chatId)
+    public async Task<ChatMetadata> GetChatAsync(ChatId chatId)
     {
         await using SqlConnection db = new(_connectionString);
 
@@ -78,13 +81,13 @@ public partial class SqlServerChatStorage : IChatStorage
         ChatInfoDto? dto = await db.QueryFirstAsync<ChatInfoDto>(
             $"""
             SELECT TOP 1 [System], [Id], [Type], [Tags]
-            FROM [{_schema}].[{_table}]
+            FROM [{_schema}].[{_tableName}]
             WHERE [System] = @System
                 AND [Id] = @Id
             """,
             new
             {
-                System = chatId.System,
+                System = chatId.ConnectorKey,
                 Id = chatId.Id
             }
         );
@@ -100,7 +103,7 @@ public partial class SqlServerChatStorage : IChatStorage
         return BuildEntity(dto);
     }
 
-    public async Task<ChatInfo[]> GetChatsAsync()
+    public async Task<ChatMetadata[]> GetChatsAsync()
     {
         await using SqlConnection db = new(_connectionString);
 
@@ -109,7 +112,7 @@ public partial class SqlServerChatStorage : IChatStorage
         IEnumerable<ChatInfoDto> dtos = await db.QueryAsync<ChatInfoDto>(
             $"""
             SELECT [System], [Id], [Type], [Tags]
-            FROM [{_schema}].[{_table}]
+            FROM [{_schema}].[{_tableName}]
             """
         );
 
@@ -122,32 +125,32 @@ public partial class SqlServerChatStorage : IChatStorage
 
         await db.ExecuteAsync(
             $"""
-            DELETE FROM [{_schema}].[{_table}]
+            DELETE FROM [{_schema}].[{_tableName}]
             WHERE [System] = @System
                 AND [Id] = @Id
             """,
             new
             {
-                System = chatId.System,
+                System = chatId.ConnectorKey,
                 Id = chatId.Id,
             }
         );
     }
 
-    public async Task UpdateChatAsync(ChatInfo chatInfo)
+    public async Task UpdateChatAsync(ChatMetadata chatInfo)
     {
         await using SqlConnection db = new(_connectionString);
 
         await db.ExecuteAsync(
             $"""
-            UPDATE [{_schema}].[{_table}]
+            UPDATE [{_schema}].[{_tableName}]
             SET [Tags] = @Tags
             WHERE [System] = @System
                 AND [Id] = @Id
             """,
             new
             {
-                System = chatInfo.ChatId.System,
+                System = chatInfo.ChatId.ConnectorKey,
                 Id = chatInfo.ChatId.Id,
                 Tags = BuildTagsString(chatInfo.Tags)
             }
@@ -161,16 +164,16 @@ public partial class SqlServerChatStorage : IChatStorage
             IF NOT EXISTS (
                 SELECT 'X'
                 FROM INFORMATION_SCHEMA.TABLES
-                WHERE TABLE_NAME = '{_table}'
+                WHERE TABLE_NAME = '{_tableName}'
                     AND TABLE_SCHEMA = '{_schema}'
             )
             BEGIN
-                CREATE TABLE [{_schema}].[{_table}] (
+                CREATE TABLE [{_schema}].[{_tableName}] (
                     [System] [nvarchar](20) NOT NULL,
                     [Id] bigint NOT NULL,
                     [Type] [nvarchar](50) NOT NULL,
                     [Title] [nvarchar](250) NOT NULL,
-                  CONSTRAINT [PK_{_table}] PRIMARY KEY CLUSTERED
+                  CONSTRAINT [PK_{_tableName}] PRIMARY KEY CLUSTERED
                   (
                     [System] ASC,
                     [Id] ASC
@@ -181,29 +184,29 @@ public partial class SqlServerChatStorage : IChatStorage
         );
     }
 
-    private static string BuildTagsString(string[] tags)
+    private static string BuildTagsString(IEnumerable<string> tags)
     {
-        return JsonSerializer.Serialize(tags);
+        return JsonSerializer.Serialize(tags.ToArray());
     }
 
-    private static string[] ParseTagsString(string? tagsString)
+    private static string[] ParseTagsFromString(string? tagsString)
     {
         return tagsString is null or ""
             ? []
             : JsonSerializer.Deserialize<string[]>(tagsString) ?? [];
     }
 
-    private static ChatInfo BuildEntity(ChatInfoDto dto)
+    private static ChatMetadata BuildEntity(ChatInfoDto dto)
     {
-        return new ChatInfo
+        return new ChatMetadata
         {
             ChatId = new ChatId
             {
-                System = dto.System,
+                ConnectorKey = dto.System,
                 Id = dto.Id,
                 Type = dto.Type
             },
-            Tags = ParseTagsString(dto.Tags)
+            Tags = [.. ParseTagsFromString(dto.Tags)]
         };
     }
 

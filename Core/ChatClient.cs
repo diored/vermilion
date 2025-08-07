@@ -1,7 +1,7 @@
 namespace DioRed.Vermilion;
 
-internal class ChatClient
+public class ChatClient
 {
-    public required ChatInfo ChatInfo { get; init; }
-    public Dictionary<string, object?> Properties { get; init; } = [];
+    public required ChatMetadata Metadata { get; init; }
+    public Dictionary<string, object?> RuntimeValues { get; init; } = [];
 }

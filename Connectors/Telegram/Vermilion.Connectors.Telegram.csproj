@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <RootNamespace>DioRed.$(AssemblyName)</RootNamespace>
+    <RootNamespace>DioRed.Vermilion.Connectors.Telegram</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Configurations>Debug;Release;DebugEngine</Configurations>
@@ -12,11 +12,11 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>12.4.3</Version>
-    <PackageId>DioRed.Vermilion.Telegram</PackageId>
+    <Version>13.0.0</Version>
+    <PackageId>DioRed.Vermilion.Connectors.Telegram</PackageId>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
-    <Description>Telegram subsystem for the Vermilion chat bot engine.</Description>
+    <Description>Telegram connector for the Vermilion chat bot engine.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,19 +24,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="9.0.6" />
-    <PackageReference Include="Telegram.Bot" Version="22.5.1" />
+    <PackageReference Include="DioRed.Common.ConfigurationExtensions" Version="0.2.7" />
+    <PackageReference Include="System.Text.Json" Version="9.0.8" />
+    <PackageReference Include="Telegram.Bot" Version="22.6.0" />
   </ItemGroup>
 
   <Choose>
       <When Condition=" '$(Configuration)' == 'DebugEngine' ">
           <ItemGroup>
-              <ProjectReference Include="..\..\Core\Vermilion.Core.csproj" />
+              <ProjectReference Include="..\..\Hosting\Vermilion.Hosting.csproj" />
           </ItemGroup>
       </When>
       <Otherwise>
           <ItemGroup>
-              <PackageReference Include="DioRed.Vermilion.Core" Version="12.4.3" />
+              <PackageReference Include="DioRed.Vermilion.Hosting" Version="13.0.0" />
           </ItemGroup>
       </Otherwise>
   </Choose>

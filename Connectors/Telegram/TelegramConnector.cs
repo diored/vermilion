@@ -1,7 +1,7 @@
 using System.Net.Sockets;
 
+using DioRed.Vermilion.Connectors.Telegram.L10n;
 using DioRed.Vermilion.Interaction.Content;
-using DioRed.Vermilion.Subsystems.Telegram.L10n;
 
 using Microsoft.Extensions.Logging;
 
@@ -10,30 +10,32 @@ using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace DioRed.Vermilion.Subsystems.Telegram;
+namespace DioRed.Vermilion.Connectors.Telegram;
 
-public class TelegramSubsystem : ISubsystem
+public class TelegramConnector : IConnector
 {
-    private readonly static string _version = typeof(TelegramSubsystem).Assembly.GetName().Version.Normalize();
+    private readonly static string _version = typeof(TelegramConnector).Assembly.GetName().Version.Normalize();
 
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly TelegramBotClient _telegramBotClient;
-    private readonly ILogger<TelegramSubsystem> _logger;
+    private readonly ILogger<TelegramConnector> _logger;
     private readonly User _botInfo;
     private readonly long[] _superAdmins;
+    private readonly string _connectorKey;
 
     public event EventHandler<MessagePostedEventArgs>? MessagePosted;
 
-    public TelegramSubsystem(
-        TelegramSubsystemOptions options,
+    public TelegramConnector(
+        TelegramConnectorOptions options,
         ILoggerFactory loggerFactory
     )
     {
         _telegramBotClient = new TelegramBotClient(options.BotToken);
-        _logger = loggerFactory.CreateLogger<TelegramSubsystem>();
+        _logger = loggerFactory.CreateLogger<TelegramConnector>();
 
         _botInfo = _telegramBotClient.GetMe().GetAwaiter().GetResult();
         _superAdmins = options.SuperAdmins;
+        _connectorKey = options.ConnectorKey;
     }
 
     public string Version => _version;
@@ -111,7 +113,7 @@ public class TelegramSubsystem : ISubsystem
 
     public bool IsSuperAdmin(ChatId chatId)
     {
-        return chatId.System == TelegramDefaults.System
+        return chatId.ConnectorKey == _connectorKey
             && _superAdmins.Contains(chatId.Id);
     }
 
@@ -151,11 +153,7 @@ public class TelegramSubsystem : ISubsystem
 
         OnMessagePosted(new MessagePostedEventArgs
         {
-            ChatId = new ChatId(
-                TelegramDefaults.System,
-                message.Chat.Type.ToString(),
-                message.Chat.Id
-            ),
+            ChatId = GetChatId(message.Chat),
             ChatTitle = GetChatTitle(message.Chat),
             Message = messageText,
             MessageId = message.MessageId,
@@ -192,11 +190,7 @@ public class TelegramSubsystem : ISubsystem
 
         OnMessagePosted(new MessagePostedEventArgs
         {
-            ChatId = new ChatId(
-                TelegramDefaults.System,
-                callbackQuery.Message.Chat.Type.ToString(),
-                callbackQuery.Message.Chat.Id
-            ),
+            ChatId = GetChatId(callbackQuery.Message.Chat),
             ChatTitle = GetChatTitle(callbackQuery.Message.Chat),
             Message = callbackQuery.Data,
             MessageId = callbackQuery.Message.MessageId,
@@ -277,6 +271,15 @@ public class TelegramSubsystem : ISubsystem
             : chat.Title ?? "";
     }
 
+    private ChatId GetChatId(Chat chat)
+    {
+        return new ChatId(
+            _connectorKey,
+            chat.Type.ToString(),
+            chat.Id
+        );
+    }
+
     private async Task<PostResult> DoActionAsync(
         Task action,
         long internalId
@@ -306,7 +309,7 @@ public class TelegramSubsystem : ISubsystem
         }
 
         // retry limit exceeded
-        return PostResult.SubsystemFailure;
+        return PostResult.ConnectorFailure;
     }
 
     private async Task<(PostResult result, T? value)> DoActionAsync<T>(
@@ -338,7 +341,7 @@ public class TelegramSubsystem : ISubsystem
         }
 
         // retry limit exceeded
-        return (PostResult.SubsystemFailure, default);
+        return (PostResult.ConnectorFailure, default);
     }
 
     private TelegramException GetTelegramException(
@@ -410,17 +413,12 @@ public class TelegramSubsystem : ISubsystem
 
     private static SocketException? FindSocketException(Exception exception)
     {
-        if (exception is SocketException socketException)
+        while (exception is not (SocketException or null))
         {
-            return socketException;
+            exception = exception.InnerException!;
         }
 
-        if (exception?.InnerException is null)
-        {
-            return null;
-        }
-
-        return FindSocketException(exception.InnerException);
+        return exception as SocketException;
     }
 
     private static PostResult GetPostResult(TelegramException tgEx)
@@ -432,7 +430,7 @@ public class TelegramSubsystem : ISubsystem
             TelegramException.ChatNotFound or
             TelegramException.NotEnoughRights or
             TelegramException.GroupUpgraded => PostResult.ChatAccessDenied,
-            _ => PostResult.SubsystemFailure
+            _ => PostResult.ConnectorFailure
         };
     }
 

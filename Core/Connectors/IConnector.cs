@@ -1,8 +1,8 @@
 using DioRed.Vermilion.Interaction.Content;
 
-namespace DioRed.Vermilion.Subsystems;
+namespace DioRed.Vermilion.Connectors;
 
-public interface ISubsystem
+public interface IConnector
 {
     event EventHandler<MessagePostedEventArgs>? MessagePosted;
 

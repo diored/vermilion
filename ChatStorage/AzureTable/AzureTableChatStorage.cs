@@ -9,33 +9,38 @@ namespace DioRed.Vermilion.ChatStorage;
 
 public class AzureTableChatStorage(
     AzureStorageSettings settings,
-    string tableName = "Chats"
+    string tableName = Defaults.TableName
 ) : IChatStorage
 {
     private readonly TableClient _tableClient = new AzureStorageClient(settings).Table(tableName);
 
-    public async Task AddChatAsync(ChatInfo chatInfo, string title)
+    public Task AddChatAsync(ChatMetadata metadata)
+    {
+        return AddChatAsync(metadata, string.Empty);
+    }
+
+    public async Task AddChatAsync(ChatMetadata metadata, string title)
     {
         await _tableClient.CreateIfNotExistsAsync();
 
         ChatTableEntity entity = new()
         {
-            PartitionKey = chatInfo.ChatId.System,
-            Type = chatInfo.ChatId.Type,
-            RowKey = chatInfo.ChatId.Id.ToString(),
+            PartitionKey = metadata.ChatId.ConnectorKey,
+            Type = metadata.ChatId.Type,
+            RowKey = metadata.ChatId.Id.ToString(),
             Title = title,
-            Tags = BuildTagsString(chatInfo.Tags)
+            Tags = BuildTagsString(metadata.Tags)
         };
 
         await _tableClient.AddEntityAsync(entity);
     }
 
-    public async Task<ChatInfo> GetChatAsync(ChatId chatId)
+    public async Task<ChatMetadata> GetChatAsync(ChatId chatId)
     {
         await _tableClient.CreateIfNotExistsAsync();
 
         var response = await _tableClient.GetEntityIfExistsAsync<ChatTableEntity>(
-             partitionKey: chatId.System,
+             partitionKey: chatId.ConnectorKey,
              rowKey: chatId.Id.ToString()
          );
 
@@ -50,11 +55,11 @@ public class AzureTableChatStorage(
         return BuildEntity(response.Value!);
     }
 
-    public async Task<ChatInfo[]> GetChatsAsync()
+    public async Task<ChatMetadata[]> GetChatsAsync()
     {
         await _tableClient.CreateIfNotExistsAsync();
 
-        List<ChatInfo> chats = [];
+        List<ChatMetadata> chats = [];
 
         await foreach (var entity in _tableClient.QueryAsync<ChatTableEntity>())
         {
@@ -67,53 +72,53 @@ public class AzureTableChatStorage(
     public async Task RemoveChatAsync(ChatId chatId)
     {
         await _tableClient.DeleteEntityAsync(
-            chatId.System,
+            chatId.ConnectorKey,
             chatId.Id.ToString()
         );
     }
 
-    public async Task UpdateChatAsync(ChatInfo chatInfo)
+    public async Task UpdateChatAsync(ChatMetadata metadata)
     {
         var response = await _tableClient.GetEntityIfExistsAsync<ChatTableEntity>(
-            partitionKey: chatInfo.ChatId.System,
-            rowKey: chatInfo.ChatId.Id.ToString()
+            partitionKey: metadata.ChatId.ConnectorKey,
+            rowKey: metadata.ChatId.Id.ToString()
         );
 
         if (!response.HasValue)
         {
-            throw new InvalidOperationException($"Chat {chatInfo.ChatId} not found");
+            throw new InvalidOperationException($"Chat {metadata.ChatId} not found");
         }
 
         ChatTableEntity entity = response.Value!;
 
-        entity.Tags = BuildTagsString(chatInfo.Tags);
+        entity.Tags = BuildTagsString(metadata.Tags);
 
         await _tableClient.UpdateEntityAsync(entity, ETag.All);
     }
 
-    private static string BuildTagsString(string[] tags)
+    private static string BuildTagsString(IEnumerable<string> tags)
     {
-        return JsonSerializer.Serialize(tags);
+        return JsonSerializer.Serialize(tags.ToArray());
     }
 
-    private static string[] ParseTagsString(string? tagsString)
+    private static string[] ParseTagsFromString(string? tagsString)
     {
         return tagsString is null or ""
             ? []
             : JsonSerializer.Deserialize<string[]>(tagsString) ?? [];
     }
 
-    private static ChatInfo BuildEntity(ChatTableEntity entity)
+    private static ChatMetadata BuildEntity(ChatTableEntity entity)
     {
-        return new ChatInfo
+        return new ChatMetadata
         {
             ChatId = new ChatId
             {
-                System = entity.PartitionKey,
+                ConnectorKey = entity.PartitionKey,
                 Id = long.Parse(entity.RowKey),
                 Type = entity.Type ?? "",
             },
-            Tags = ParseTagsString(entity.Tags)
+            Tags = [.. ParseTagsFromString(entity.Tags)]
         };
     }
 

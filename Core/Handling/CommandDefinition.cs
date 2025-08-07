@@ -5,11 +5,11 @@ namespace DioRed.Vermilion.Handling;
 public class CommandDefinition
 {
     public required Template Template { get; init; }
-    public bool? HasTail { get; init; }
+    public TailPolicy TailPolicy { get; init; } = TailPolicy.Any;
     public UserRole RequiredRole { get; init; } = UserRole.Member;
     public CommandPriority Priority { get; init; } = CommandPriority.Medium;
     public bool LogHandling { get; init; } = false;
-    public bool EligibleClientsOnly { get; init; } = true;
+    public ClientsPolicy ClientsPolicy { get; init; } = ClientsPolicy.EligibleOnly;
 
     public bool Matches(
         string command,
@@ -19,14 +19,19 @@ public class CommandDefinition
     )
     {
         return Template.Matches(command) &&
-            (
-                !HasTail.HasValue ||
-                HasTail == hasTail
-            ) &&
+            TailPolicy switch
+            {
+                TailPolicy.Any => true,
+                TailPolicy.HasTail => hasTail,
+                TailPolicy.HasNoTail => !hasTail,
+                _ => throw new ArgumentOutOfRangeException(nameof(TailPolicy), TailPolicy, null)
+            } &&
             senderRole.HasFlag(RequiredRole) &&
-            (
-                !EligibleClientsOnly ||
-                clientIsEligible
-            );
+            ClientsPolicy switch
+            {
+                ClientsPolicy.Any => true,
+                ClientsPolicy.EligibleOnly => clientIsEligible,
+                _ => throw new ArgumentOutOfRangeException(nameof(ClientsPolicy), ClientsPolicy, null)
+            };
     }
 }

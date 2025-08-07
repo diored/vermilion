@@ -63,7 +63,7 @@ public class Feedback(
         );
     }
 
-    public async Task ContentAsync(Func<ChatInfo, Task<IContent>> contentBuilder)
+    public async Task ContentAsync(Func<ChatMetadata, Task<IContent>> contentBuilder)
     {
         await botCore.PostAsync(
             receiver,
@@ -89,6 +89,6 @@ public class Feedback(
     }
 
     public Feedback To(ChatId chatId) => new(botCore, Receiver.Chat(chatId));
-    public Feedback To(Func<ChatInfo, bool> filter) => new(botCore, Receiver.Broadcast(filter));
+    public Feedback To(Func<ChatMetadata, bool> filter) => new(botCore, Receiver.Broadcast(filter));
     public Feedback ToEveryone() => new(botCore, Receiver.Everyone);
 }

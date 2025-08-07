@@ -9,8 +9,8 @@
     <Project Path="ChatStorage/InMemory/Vermilion.ChatStorage.InMemory.csproj" />
     <Project Path="ChatStorage/SqlServer/Vermilion.ChatStorage.SqlServer.csproj" />
   </Folder>
-  <Folder Name="/Subsystems/">
-    <Project Path="Subsystems/Telegram/Vermilion.Subsystems.Telegram.csproj" />
+  <Folder Name="/Connectors/">
+    <Project Path="Connectors/Telegram/Vermilion.Connectors.Telegram.csproj" />
   </Folder>
   <Project Path="Complete/Vermilion.Complete.csproj" />
   <Project Path="Core/Vermilion.Core.csproj">
