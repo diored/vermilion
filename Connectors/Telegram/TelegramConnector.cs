@@ -64,6 +64,11 @@ public class TelegramConnector : IConnector
                 {
                     _logger.LogWarning("Socket exception: {Message}", socketException.Message);
                 }
+                else if (exception is ApiRequestException apiEx &&
+                    apiEx.Message.Contains("Bad gateway"))
+                {
+                    _logger.LogWarning("Bad gateway (network issue)");
+                }
                 else
                 {
                     _logger.LogError(
@@ -301,7 +306,7 @@ public class TelegramConnector : IConnector
             catch (Exception ex)
             {
                 TelegramException tgEx = GetTelegramException(ex, internalId);
-                if (tgEx is not (TelegramException.TooManyRequests or TelegramException.SocketException))
+                if (tgEx is not (TelegramException.TooManyRequests or TelegramException.NetworkIssue))
                 {
                     return GetPostResult(tgEx);
                 }
@@ -333,7 +338,7 @@ public class TelegramConnector : IConnector
             catch (Exception ex)
             {
                 TelegramException tgEx = GetTelegramException(ex, internalId);
-                if (tgEx is not (TelegramException.TooManyRequests or TelegramException.SocketException))
+                if (tgEx is not (TelegramException.TooManyRequests or TelegramException.NetworkIssue))
                 {
                     return (GetPostResult(tgEx), default);
                 }
@@ -349,6 +354,12 @@ public class TelegramConnector : IConnector
         long internalId
     )
     {
+        if (ex is SocketException ||
+            ex.Message.Contains("Bad gateway"))
+        {
+            return TelegramException.NetworkIssue;
+        }
+
         if (ex is ApiRequestException apiEx)
         {
             if (ex.Message.Contains("blocked") ||
@@ -399,15 +410,11 @@ public class TelegramConnector : IConnector
             }
         }
 
-        if (ex is SocketException)
-        {
-            return TelegramException.SocketException;
-        }
-
         _logger.LogError(
             ex,
             ExceptionMessages.MessagePostUnhandledError_0
         );
+
         return TelegramException.Unexpected;
     }
 
