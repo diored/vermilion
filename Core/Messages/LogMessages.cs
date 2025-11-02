@@ -1,5 +1,4 @@
-
-namespace DioRed.Vermilion.L10n;
+namespace DioRed.Vermilion.Messages;
 
 internal static class LogMessages
 {

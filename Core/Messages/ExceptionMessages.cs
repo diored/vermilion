@@ -1,6 +1,4 @@
-using System.Runtime.Serialization;
-
-namespace DioRed.Vermilion.L10n;
+namespace DioRed.Vermilion.Messages;
 
 public static class ExceptionMessages
 {

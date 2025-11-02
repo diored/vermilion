@@ -1,5 +1,5 @@
 using DioRed.Vermilion.ChatStorage;
-using DioRed.Vermilion.L10n;
+using DioRed.Vermilion.Messages;
 
 namespace DioRed.Vermilion.Hosting;
 public class ChatStorageCollection(IServiceProvider services)

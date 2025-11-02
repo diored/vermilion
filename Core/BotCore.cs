@@ -5,7 +5,7 @@ using DioRed.Vermilion.Handling.Context;
 using DioRed.Vermilion.Interaction;
 using DioRed.Vermilion.Interaction.Content;
 using DioRed.Vermilion.Interaction.Receivers;
-using DioRed.Vermilion.L10n;
+using DioRed.Vermilion.Messages;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

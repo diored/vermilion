@@ -2,7 +2,7 @@ using System.Reflection;
 
 using DioRed.Vermilion.Handling;
 
-using DioRed.Vermilion.L10n;
+using DioRed.Vermilion.Messages;
 
 namespace DioRed.Vermilion.Hosting;
 public class CommandHandlersCollection(IServiceProvider services)

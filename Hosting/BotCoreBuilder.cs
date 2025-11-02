@@ -3,7 +3,7 @@ using DioRed.Vermilion.ChatStorage;
 using DioRed.Vermilion.Connectors;
 using DioRed.Vermilion.Handling;
 using DioRed.Vermilion.Jobs;
-using DioRed.Vermilion.L10n;
+using DioRed.Vermilion.Messages;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

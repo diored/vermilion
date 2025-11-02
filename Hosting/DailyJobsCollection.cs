@@ -1,7 +1,7 @@
 using System.Reflection;
 
 using DioRed.Vermilion.Jobs;
-using DioRed.Vermilion.L10n;
+using DioRed.Vermilion.Messages;
 
 namespace DioRed.Vermilion.Hosting;
 public class DailyJobsCollection(IServiceProvider services)

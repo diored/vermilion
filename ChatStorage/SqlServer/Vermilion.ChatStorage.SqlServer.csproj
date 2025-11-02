@@ -25,9 +25,9 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.66" />
-    <PackageReference Include="DioRed.Common.ConfigurationExtensions" Version="0.2.7" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
-    <PackageReference Include="System.Text.Json" Version="9.0.8" />
+    <PackageReference Include="DioRed.Common.ConfigurationExtensions" Version="0.3.2" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.2" />
+    <PackageReference Include="System.Text.Json" Version="9.0.10" />
   </ItemGroup>
 
   <Choose>
