@@ -7,12 +7,24 @@ using DioRed.Common.AzureStorage;
 
 namespace DioRed.Vermilion.ChatStorage;
 
-public class AzureTableChatStorage(
-    AzureStorageSettings settings,
-    string tableName = Defaults.TableName
-) : IChatStorage
+public class AzureTableChatStorage : IChatStorage
 {
-    private readonly TableClient _tableClient = new AzureStorageClient(settings).Table(tableName);
+    private readonly TableClient _tableClient;
+    private readonly Lazy<Task> _ensureTable;
+
+    public AzureTableChatStorage(
+        AzureStorageSettings settings,
+        string tableName = Defaults.TableName
+    )
+    {
+        _tableClient = new AzureStorageClient(settings).Table(tableName);
+
+        _ensureTable = new(
+            () => _tableClient.CreateIfNotExistsAsync()
+        );
+    }
+
+    private Task EnsureTableAsync() => _ensureTable.Value;
 
     public Task AddChatAsync(ChatMetadata metadata)
     {
@@ -21,7 +33,7 @@ public class AzureTableChatStorage(
 
     public async Task AddChatAsync(ChatMetadata metadata, string title)
     {
-        await _tableClient.CreateIfNotExistsAsync();
+        await EnsureTableAsync().ConfigureAwait(false);
 
         ChatTableEntity entity = new()
         {
@@ -37,7 +49,7 @@ public class AzureTableChatStorage(
 
     public async Task<ChatMetadata> GetChatAsync(ChatId chatId)
     {
-        await _tableClient.CreateIfNotExistsAsync();
+        await EnsureTableAsync().ConfigureAwait(false);
 
         var response = await _tableClient.GetEntityIfExistsAsync<ChatTableEntity>(
              partitionKey: chatId.ConnectorKey,
@@ -57,7 +69,7 @@ public class AzureTableChatStorage(
 
     public async Task<ChatMetadata[]> GetChatsAsync()
     {
-        await _tableClient.CreateIfNotExistsAsync();
+        await EnsureTableAsync().ConfigureAwait(false);
 
         List<ChatMetadata> chats = [];
 
@@ -71,6 +83,7 @@ public class AzureTableChatStorage(
 
     public async Task RemoveChatAsync(ChatId chatId)
     {
+        await EnsureTableAsync().ConfigureAwait(false);
         await _tableClient.DeleteEntityAsync(
             chatId.ConnectorKey,
             chatId.Id.ToString()
@@ -79,6 +92,7 @@ public class AzureTableChatStorage(
 
     public async Task UpdateChatAsync(ChatMetadata metadata)
     {
+        await EnsureTableAsync().ConfigureAwait(false);
         var response = await _tableClient.GetEntityIfExistsAsync<ChatTableEntity>(
             partitionKey: metadata.ChatId.ConnectorKey,
             rowKey: metadata.ChatId.Id.ToString()

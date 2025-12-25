@@ -32,4 +32,9 @@ public static class Events
     // 133x - job scheduling
     public static EventId JobScheduled { get; } = new EventId(1330, "Job scheduled");
     public static EventId JobScheduleFailure { get; } = new EventId(1339, "Job schedule failure"); // not in use
+
+    // 134x - job execution
+    public static EventId JobCompleted { get; } = new EventId(1340, "Job completed");
+    public static EventId JobCancelled { get; } = new EventId(1341, "Job cancelled");
+    public static EventId JobFailed { get; } = new EventId(1349, "Job failed");
 }

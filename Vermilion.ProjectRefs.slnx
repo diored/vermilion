@@ -1,0 +1,20 @@
+<Solution>
+  <Folder Name="/ChatStorage/">
+    <Project Path="ChatStorage/AzureTable/Vermilion.ChatStorage.AzureTable.ProjectRefs.csproj" />
+    <Project Path="ChatStorage/InMemory/Vermilion.ChatStorage.InMemory.ProjectRefs.csproj" />
+    <Project Path="ChatStorage/JsonFile/Vermilion.ChatStorage.JsonFile.ProjectRefs.csproj" />
+    <Project Path="ChatStorage/SqlServer/Vermilion.ChatStorage.SqlServer.ProjectRefs.csproj" />
+  </Folder>
+  <Folder Name="/Connectors/">
+    <Project Path="Connectors/Telegram/Vermilion.Connectors.Telegram.ProjectRefs.csproj" />
+  </Folder>
+  <Folder Name="/examples/">
+    <Project Path="examples/QuickStart.Telegram.InMemory/QuickStart.Telegram.InMemory.ProjectRefs.csproj" />
+    <Project Path="examples/QuickStart.Telegram.JsonFile/QuickStart.Telegram.JsonFile.ProjectRefs.csproj" />
+    <Project Path="examples/QuickStart.Telegram.AzureTable/QuickStart.Telegram.AzureTable.ProjectRefs.csproj" />
+    <Project Path="examples/QuickStart.Telegram.SqlServer/QuickStart.Telegram.SqlServer.ProjectRefs.csproj" />
+  </Folder>
+  <Project Path="Abstractions/Vermilion.Abstractions.ProjectRefs.csproj" />
+  <Project Path="Core/Vermilion.Core.ProjectRefs.csproj" />
+  <Project Path="Hosting/Vermilion.Hosting.ProjectRefs.csproj" />
+</Solution>

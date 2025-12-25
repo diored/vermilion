@@ -10,38 +10,52 @@ public static class AzureTableHostingExtensions
 {
     private const string ConfigKeyPrefix = "Vermilion:AzureTable";
 
-    public static void UseAzureTable(
-        this ChatStorageCollection chatStorageCollection
-    )
+    extension(IChatStorageCollection chatStorageCollection)
     {
-        chatStorageCollection.Use(serviceProvider =>
+        public void UseAzureTable()
         {
-            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-
-            AzureTableChatStorageOptions options = new()
+            chatStorageCollection.Use(serviceProvider =>
             {
-                Settings = AzureStorageSettings.Load(configuration.GetSection(ConfigKeyPrefix)),
-                TableName = configuration[$"{ConfigKeyPrefix}:TableName"]
-                    ?? Defaults.TableName
+                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+
+                AzureTableChatStorageOptions options = new()
+                {
+                    Settings = AzureStorageSettings.Load(configuration.GetSection(ConfigKeyPrefix)),
+                    TableName = configuration[$"{ConfigKeyPrefix}:TableName"]
+                        ?? Defaults.TableName
+                };
+
+                return new AzureTableChatStorage(
+                    options.Settings,
+                    options.TableName
+                );
+            });
+        }
+
+        public void UseAzureTable(AzureTableChatStorageOptions options)
+        {
+            chatStorageCollection.Use(
+                new AzureTableChatStorage(
+                    options.Settings,
+                    options.TableName
+                )
+            );
+        }
+
+        public void UseAzureTable(
+            AzureStorageSettings settings,
+            Action<AzureTableChatStorageOptions>? configure = null
+        )
+        {
+            var options = new AzureTableChatStorageOptions
+            {
+                Settings = settings,
+                TableName = Defaults.TableName
             };
 
-            return new AzureTableChatStorage(
-                options.Settings,
-                options.TableName
-            );
-        });
-    }
+            configure?.Invoke(options);
 
-    public static void UseAzureTable(
-        this ChatStorageCollection chatStorageCollection,
-        AzureTableChatStorageOptions options
-    )
-    {
-        chatStorageCollection.Use(
-            new AzureTableChatStorage(
-                options.Settings,
-                options.TableName
-            )
-        );
+            chatStorageCollection.UseAzureTable(options);
+        }
     }
 }

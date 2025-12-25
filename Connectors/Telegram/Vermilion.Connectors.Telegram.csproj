@@ -1,45 +1,35 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <RootNamespace>DioRed.Vermilion.Connectors.Telegram</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Configurations>Debug;Release;DebugEngine</Configurations>
   </PropertyGroup>
 
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>13.0.1</Version>
+    <Version>14.0.0</Version>
     <PackageId>DioRed.Vermilion.Connectors.Telegram</PackageId>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
-    <Description>Telegram connector for the Vermilion chat bot engine.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>chatbot;bot;telegram;messaging;dotnet;generic-host;vermilion</PackageTags>
+    <Description>Telegram connector for Vermilion. Supports single-bot and multi-account configuration, command dispatching and message sending.</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\..\Assets\packageIcon.png" Pack="true" PackagePath="." />
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DioRed.Common.ConfigurationExtensions" Version="0.3.2" />
-    <PackageReference Include="System.Text.Json" Version="9.0.10" />
-    <PackageReference Include="Telegram.Bot" Version="22.7.4" />
+    <PackageReference Include="DioRed.Common.ConfigurationExtensions" Version="0.4.0" />
+    <PackageReference Include="DioRed.Vermilion.Abstractions" Version="14.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.1" />
+    <PackageReference Include="Telegram.Bot" Version="22.7.6" />
   </ItemGroup>
-
-  <Choose>
-      <When Condition=" '$(Configuration)' == 'DebugEngine' ">
-          <ItemGroup>
-              <ProjectReference Include="..\..\Hosting\Vermilion.Hosting.csproj" />
-          </ItemGroup>
-      </When>
-      <Otherwise>
-          <ItemGroup>
-              <PackageReference Include="DioRed.Vermilion.Hosting" Version="13.0.0" />
-          </ItemGroup>
-      </Otherwise>
-  </Choose>
 
 </Project>

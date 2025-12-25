@@ -7,14 +7,30 @@
   <Folder Name="/ChatStorage/">
     <Project Path="ChatStorage/AzureTable/Vermilion.ChatStorage.AzureTable.csproj" />
     <Project Path="ChatStorage/InMemory/Vermilion.ChatStorage.InMemory.csproj" />
+    <Project Path="ChatStorage/JsonFile/Vermilion.ChatStorage.JsonFile.csproj" />
     <Project Path="ChatStorage/SqlServer/Vermilion.ChatStorage.SqlServer.csproj" />
   </Folder>
   <Folder Name="/Connectors/">
     <Project Path="Connectors/Telegram/Vermilion.Connectors.Telegram.csproj" />
   </Folder>
-  <Project Path="Complete/Vermilion.Complete.csproj" />
-  <Project Path="Core/Vermilion.Core.csproj">
+  <Folder Name="/examples/">
+    <Project Path="examples/QuickStart.Telegram.InMemory/QuickStart.Telegram.InMemory.csproj">
     <BuildType Solution="DebugEngine|*" Project="Debug" />
   </Project>
+    <Project Path="examples/QuickStart.Telegram.JsonFile/QuickStart.Telegram.JsonFile.csproj">
+    <BuildType Solution="DebugEngine|*" Project="Debug" />
+  </Project>
+    <Project Path="examples/QuickStart.Telegram.AzureTable/QuickStart.Telegram.AzureTable.csproj">
+      <BuildType Solution="DebugEngine|*" Project="Debug" />
+    </Project>
+    <Project Path="examples/QuickStart.Telegram.SqlServer/QuickStart.Telegram.SqlServer.csproj">
+      <BuildType Solution="DebugEngine|*" Project="Debug" />
+    </Project>
+  </Folder>
+  <Project Path="Complete/Vermilion.Complete.csproj" />
+  <Project Path="Abstractions/Vermilion.Abstractions.csproj">
+    <BuildType Solution="DebugEngine|*" Project="Debug" />
+  </Project>
+  <Project Path="Core/Vermilion.Core.csproj" />
   <Project Path="Hosting/Vermilion.Hosting.csproj" />
 </Solution>

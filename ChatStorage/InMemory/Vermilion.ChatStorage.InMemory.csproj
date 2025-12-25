@@ -1,40 +1,32 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <RootNamespace>DioRed.Vermilion.ChatStorage</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Configurations>Debug;Release;DebugEngine</Configurations>
   </PropertyGroup>
 
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
     <PackageId>DioRed.Vermilion.ChatStorage.InMemory</PackageId>
-    <Version>13.0.0</Version>
+    <Version>14.0.0</Version>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
-    <Description>In-memory chat storage for the Vermilion chat bot engine.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>chatbot;bot;telegram;messaging;dotnet;generic-host;vermilion</PackageTags>
+    <Description>In-memory chat storage for Vermilion. Great for quick starts, demos and tests. Not persistent.</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\..\Assets\packageIcon.png" Pack="true" PackagePath="." />
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
-
-  <Choose>
-      <When Condition=" '$(Configuration)' == 'DebugEngine' ">
-          <ItemGroup>
-              <ProjectReference Include="..\..\Hosting\Vermilion.Hosting.csproj" />
-          </ItemGroup>
-      </When>
-      <Otherwise>
-          <ItemGroup>
-              <PackageReference Include="DioRed.Vermilion.Hosting" Version="13.0.0" />
-          </ItemGroup>
-      </Otherwise>
-  </Choose>
+  <ItemGroup>
+    <PackageReference Include="DioRed.Vermilion.Abstractions" Version="14.0.0" />
+  </ItemGroup>
 
 </Project>

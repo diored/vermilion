@@ -1,5 +1,6 @@
 using DioRed.Vermilion.Connectors;
 using DioRed.Vermilion.Connectors.Telegram;
+using DioRed.Vermilion.Extensions;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,69 +12,83 @@ public static class TelegramHostingExtensions
 {
     private const string ConfigKeyPrefix = "Vermilion:Telegram";
 
-    public static ConnectorsCollection AddTelegram(
-        this ConnectorsCollection connectors
-    )
+    extension(IConnectorsCollection connectors)
     {
-        return connectors.Add(serviceProvider =>
+        public IConnectorsCollection AddTelegram()
         {
-            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-
-            Dictionary<string, IConnector> connectorsDictionary = [];
-
-            string? accounts = configuration[$"{ConfigKeyPrefix}:Accounts"];
-
-            if (accounts is null)
+            return connectors.Add(serviceProvider =>
             {
-                TelegramConnectorOptions options = ReadOptions(
-                    configuration,
-                    ConfigKeyPrefix
-                );
+                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+                var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
-                options.ConnectorKey = Defaults.ConnectorKey;
+                Dictionary<string, IConnector> connectorsDictionary = [];
 
-                connectorsDictionary.Add(
-                    options.ConnectorKey,
-                    new TelegramConnector(options, loggerFactory)
-                 );
-            }
-            else
-            {
-                foreach (string account in accounts.SplitBy(',').Distinct())
+                string? accounts = configuration[$"{ConfigKeyPrefix}:Accounts"];
+
+                if (accounts is null)
                 {
                     TelegramConnectorOptions options = ReadOptions(
                         configuration,
-                        $"{ConfigKeyPrefix}:{account}"
+                        ConfigKeyPrefix
                     );
 
-                    options.ConnectorKey = account;
+                    options.ConnectorKey = Defaults.ConnectorKey;
 
                     connectorsDictionary.Add(
                         options.ConnectorKey,
                         new TelegramConnector(options, loggerFactory)
                      );
                 }
-            }
+                else
+                {
+                    foreach (string account in accounts.SplitBy(',').Distinct())
+                    {
+                        TelegramConnectorOptions options = ReadOptions(
+                            configuration,
+                            $"{ConfigKeyPrefix}:{account}"
+                        );
 
-            return connectorsDictionary;
-        });
-    }
+                        options.ConnectorKey = account;
 
-    public static ConnectorsCollection AddTelegram(
-        this ConnectorsCollection connectors,
-        TelegramConnectorOptions options
-    )
-    {
-        return connectors.Add(serviceProvider =>
+                        connectorsDictionary.Add(
+                            options.ConnectorKey,
+                            new TelegramConnector(options, loggerFactory)
+                         );
+                    }
+                }
+
+                return connectorsDictionary;
+            });
+        }
+
+        public IConnectorsCollection AddTelegram(TelegramConnectorOptions options)
         {
-            ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+            return connectors.Add(serviceProvider =>
+            {
+                ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
-            return new KeyValuePair<string, IConnector>(
-                Defaults.ConnectorKey,
-                new TelegramConnector(options, loggerFactory)
-            );
-        });
+                return new KeyValuePair<string, IConnector>(
+                    Defaults.ConnectorKey,
+                    new TelegramConnector(options, loggerFactory)
+                );
+            });
+        }
+
+        public IConnectorsCollection AddTelegram(
+            string botToken,
+            Action<TelegramConnectorOptions>? configure = null
+        )
+        {
+            var options = new TelegramConnectorOptions
+            {
+                BotToken = botToken,
+                ConnectorKey = Defaults.ConnectorKey,
+            };
+
+            configure?.Invoke(options);
+
+            return connectors.AddTelegram(options);
+        }
     }
 
     private static TelegramConnectorOptions ReadOptions(

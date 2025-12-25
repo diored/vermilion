@@ -4,10 +4,11 @@ namespace DioRed.Vermilion.Hosting;
 
 public static class InMemoryHostingExtensions
 {
-    public static void UseInMemory(
-        this ChatStorageCollection chatStorageCollection
-    )
+    extension(IChatStorageCollection chatStorageCollection)
     {
-        chatStorageCollection.Use(new InMemoryChatStorage());
+        public void UseInMemory()
+        {
+            chatStorageCollection.Use(new InMemoryChatStorage());
+        }
     }
 }

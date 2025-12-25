@@ -1,5 +1,6 @@
 namespace DioRed.Vermilion.Handling;
-public enum ClientsPolicy
+
+public enum CommandClientsPolicy
 {
     EligibleOnly,
     Any

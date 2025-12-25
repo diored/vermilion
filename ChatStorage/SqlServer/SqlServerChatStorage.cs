@@ -78,7 +78,7 @@ public partial class SqlServerChatStorage : IChatStorage
 
         await EnsureTableExistsAsync(db);
 
-        ChatInfoDto? dto = await db.QueryFirstAsync<ChatInfoDto>(
+        ChatInfoDto? dto = await db.QueryFirstOrDefaultAsync<ChatInfoDto>(
             $"""
             SELECT TOP 1 [System], [Id], [Type], [Tags]
             FROM [{_schema}].[{_tableName}]
@@ -123,6 +123,8 @@ public partial class SqlServerChatStorage : IChatStorage
     {
         await using SqlConnection db = new(_connectionString);
 
+        await EnsureTableExistsAsync(db);
+
         await db.ExecuteAsync(
             $"""
             DELETE FROM [{_schema}].[{_tableName}]
@@ -140,6 +142,8 @@ public partial class SqlServerChatStorage : IChatStorage
     public async Task UpdateChatAsync(ChatMetadata chatInfo)
     {
         await using SqlConnection db = new(_connectionString);
+
+        await EnsureTableExistsAsync(db);
 
         await db.ExecuteAsync(
             $"""
@@ -173,12 +177,27 @@ public partial class SqlServerChatStorage : IChatStorage
                     [Id] bigint NOT NULL,
                     [Type] [nvarchar](50) NOT NULL,
                     [Title] [nvarchar](250) NOT NULL,
+                    [Tags] [nvarchar](max) NULL,
                   CONSTRAINT [PK_{_tableName}] PRIMARY KEY CLUSTERED
                   (
                     [System] ASC,
                     [Id] ASC
                   ) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
                 ) ON [PRIMARY]
+            END
+            ELSE
+            BEGIN
+                -- Backward-compatible migration: older versions created the table without the [Tags] column.
+                IF NOT EXISTS (
+                    SELECT 'X'
+                    FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_NAME = '{_tableName}'
+                        AND TABLE_SCHEMA = '{_schema}'
+                        AND COLUMN_NAME = 'Tags'
+                )
+                BEGIN
+                    ALTER TABLE [{_schema}].[{_tableName}] ADD [Tags] [nvarchar](max) NULL;
+                END
             END
             """
         );

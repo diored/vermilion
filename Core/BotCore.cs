@@ -1,5 +1,6 @@
 using DioRed.Vermilion.ChatStorage;
 using DioRed.Vermilion.Connectors;
+using DioRed.Vermilion.Extensions;
 using DioRed.Vermilion.Handling;
 using DioRed.Vermilion.Handling.Context;
 using DioRed.Vermilion.Interaction;
@@ -14,7 +15,7 @@ namespace DioRed.Vermilion;
 
 public class BotCore : IHostedService
 {
-    private static readonly object _lock = new();
+    private readonly Lock _sync = new();
 
     private readonly IChatStorage _chatStorage;
     private readonly ConnectorsManager _connectors;
@@ -101,13 +102,45 @@ public class BotCore : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
-        lock (_lock)
+        bool needsInitialization = false;
+
+        lock (_sync)
         {
             if (State is BotCoreState.NotInitialized)
             {
-                Initialize();
+                State = BotCoreState.Initializing;
+                needsInitialization = true;
             }
 
+            if (State is not (BotCoreState.Initializing or BotCoreState.Initialized or BotCoreState.Stopped))
+            {
+                throw new InvalidOperationException(
+                    string.Format(
+                        ExceptionMessages.CannotStartBotCoreInState_1,
+                        State
+                    )
+                );
+            }
+        }
+
+        if (needsInitialization)
+        {
+            try
+            {
+                await InitializeAsync().ConfigureAwait(false);
+            }
+            catch
+            {
+                lock (_sync)
+                {
+                    State = BotCoreState.NotInitialized;
+                }
+                throw;
+            }
+        }
+
+        lock (_sync)
+        {
             if (State is not (BotCoreState.Initialized or BotCoreState.Stopped))
             {
                 throw new InvalidOperationException(
@@ -164,7 +197,7 @@ public class BotCore : IHostedService
 
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        lock (_lock)
+        lock (_sync)
         {
             if (State is BotCoreState.Stopped)
             {
@@ -311,56 +344,41 @@ public class BotCore : IHostedService
         }
     }
 
-    private void Initialize()
+    private async Task InitializeAsync()
     {
-        lock (_lock)
-        {
-            if (State != BotCoreState.NotInitialized)
-            {
-                throw new InvalidOperationException(
-                    ExceptionMessages.BotCoreAlreadyInitialized_0
-                );
-            }
+        // Load saved chats.
+        ChatMetadata[] chats = await _chatStorage.GetChatsAsync().ConfigureAwait(false);
 
-            State = BotCoreState.Initializing;
+        foreach (ChatMetadata chatMetadata in chats)
+        {
+            _chatClientsManager.Add(chatMetadata);
         }
 
-        try
+        // Subscribe to connectors.
+        foreach ((_, IConnector connector) in _connectors.Enumerate())
         {
-            ChatMetadata[] chats = _chatStorage.GetChatsAsync().GetAwaiter().GetResult();
+            connector.MessagePosted += (_, args) => OnMessagePosted(args);
+        }
 
-            foreach (ChatMetadata chatMetadata in chats)
-            {
-                _chatClientsManager.Add(chatMetadata);
-            }
+        if (_options.ShowCoreVersion)
+        {
+            _logger.LogInformation(
+                LogMessages.CoreVersionInfo_1,
+                Version
+            );
+        }
 
-            foreach ((_, IConnector connector) in _connectors.Enumerate())
-            {
-                connector.MessagePosted += (_, args) => OnMessagePosted(args);
-            }
+        if (_options.Greeting is not null)
+        {
+            _logger.LogInformation(
+                LogMessages.CustomGreeting_1,
+                _options.Greeting
+            );
+        }
 
-            if (_options.ShowCoreVersion)
-            {
-                _logger.LogInformation(
-                    LogMessages.CoreVersionInfo_1,
-                    Version
-                );
-            }
-
-            if (_options.Greeting is not null)
-            {
-                _logger.LogInformation(
-                    LogMessages.CustomGreeting_1,
-                    _options.Greeting
-                );
-            }
-
+        lock (_sync)
+        {
             State = BotCoreState.Initialized;
-        }
-        catch
-        {
-            State = BotCoreState.NotInitialized;
-            throw;
         }
     }
 

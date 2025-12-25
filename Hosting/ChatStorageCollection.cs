@@ -2,7 +2,8 @@ using DioRed.Vermilion.ChatStorage;
 using DioRed.Vermilion.Messages;
 
 namespace DioRed.Vermilion.Hosting;
-public class ChatStorageCollection(IServiceProvider services)
+
+public class ChatStorageCollection(IServiceProvider services) : IChatStorageCollection
 {
     internal IChatStorage? ChatStorage { get; private set; }
 

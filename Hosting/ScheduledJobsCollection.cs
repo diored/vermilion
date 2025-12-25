@@ -4,46 +4,47 @@ using DioRed.Vermilion.Jobs;
 using DioRed.Vermilion.Messages;
 
 namespace DioRed.Vermilion.Hosting;
-public class DailyJobsCollection(IServiceProvider services)
-{
-    internal List<IDailyJob> DailyJobs { get; } = [];
 
-    public DailyJobsCollection Add(IDailyJob dailyJob)
+public class ScheduledJobsCollection(IServiceProvider services)
+{
+    internal List<IScheduledJob> ScheduledJobs { get; } = [];
+
+    public ScheduledJobsCollection Add(IScheduledJob scheduledJob)
     {
-        DailyJobs.Add(dailyJob);
+        ScheduledJobs.Add(scheduledJob);
 
         return this;
     }
 
-    public DailyJobsCollection Add(Type type)
+    public ScheduledJobsCollection Add(Type type)
     {
-        if (!typeof(IDailyJob).IsAssignableFrom(type))
+        if (!typeof(IScheduledJob).IsAssignableFrom(type))
         {
             throw new ArgumentException(
                 string.Format(
                     ExceptionMessages.TypeDoesntImplementTheInterface_2,
                     type.Name,
-                    nameof(IDailyJob)
+                    nameof(IScheduledJob)
                 ),
                 nameof(type)
             );
         }
 
-        return Add((IDailyJob)TypeResolver.Resolve(services, type));
+        return Add((IScheduledJob)TypeResolver.Resolve(services, type));
     }
 
-    public DailyJobsCollection Add<T>()
-        where T : IDailyJob
+    public ScheduledJobsCollection Add<T>()
+        where T : IScheduledJob
     {
         return Add(TypeResolver.Resolve<T>(services));
     }
 
-    public DailyJobsCollection LoadFromEntryAssembly()
+    public ScheduledJobsCollection LoadFromEntryAssembly()
     {
         return LoadFromAssembly(Assembly.GetEntryAssembly()!);
     }
 
-    public DailyJobsCollection LoadFromAssembly(Assembly assembly)
+    public ScheduledJobsCollection LoadFromAssembly(Assembly assembly)
     {
         TypeInfo[] dailyJobs =
         [
@@ -51,7 +52,7 @@ public class DailyJobsCollection(IServiceProvider services)
                 .Where(typeInfo =>
                     typeInfo.IsClass &&
                     !typeInfo.IsAbstract &&
-                    typeInfo.ImplementedInterfaces.Contains(typeof(IDailyJob)))
+                    typeInfo.ImplementedInterfaces.Contains(typeof(IScheduledJob)))
         ];
 
         foreach (TypeInfo typeInfo in dailyJobs)
@@ -62,7 +63,7 @@ public class DailyJobsCollection(IServiceProvider services)
         return this;
     }
 
-    public DailyJobsCollection LoadFromAssemblies(IEnumerable<Assembly> assemblies)
+    public ScheduledJobsCollection LoadFromAssemblies(IEnumerable<Assembly> assemblies)
     {
         foreach (Assembly assembly in assemblies)
         {

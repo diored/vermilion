@@ -1,44 +1,35 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <RootNamespace>DioRed.Vermilion.Hosting</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Configurations>Debug;Release;DebugEngine</Configurations>
   </PropertyGroup>
   
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>13.0.0</Version>
+    <Version>14.0.0</Version>
     <PackageId>DioRed.Vermilion.Hosting</PackageId>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
-    <Description>Vermilion chat bot hosting extensions.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>chatbot;bot;telegram;messaging;dotnet;generic-host;vermilion</PackageTags>
+    <Description>Generic Host integration for Vermilion. Provides AddVermilion(...) and configuration collections for chat storage, connectors, command handlers and scheduled jobs.</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\Assets\packageIcon.png" Pack="true" PackagePath="." />
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DioRed.Common.Logging" Version="4.6.10" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
+    <PackageReference Include="DioRed.Common.ConfigurationExtensions" Version="0.4.0" />
+    <PackageReference Include="DioRed.Common.Logging" Version="4.7.2" />
+    <PackageReference Include="DioRed.Vermilion.Core" Version="14.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
   </ItemGroup>
-
-  <Choose>
-      <When Condition=" '$(Configuration)' == 'DebugEngine' ">
-          <ItemGroup>
-            <ProjectReference Include="..\Core\Vermilion.Core.csproj" />
-          </ItemGroup>
-      </When>
-      <Otherwise>
-          <ItemGroup>
-            <PackageReference Include="DioRed.Vermilion.Core" Version="13.0.0" />
-          </ItemGroup>
-      </Otherwise>
-  </Choose>
 
 </Project>

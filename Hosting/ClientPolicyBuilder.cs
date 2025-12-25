@@ -70,7 +70,11 @@ public class ClientPolicyBuilder
         }
         else
         {
-            _policy = chatId => _policy(chatId) && rule(chatId);
+            // IMPORTANT: capture the previous policy delegate.
+            // If we reference _policy directly in the new lambda, it becomes self-referential
+            // after assignment and will cause a stack overflow at runtime.
+            var previous = _policy;
+            _policy = chatId => previous(chatId) && rule(chatId);
         }
     }
 }

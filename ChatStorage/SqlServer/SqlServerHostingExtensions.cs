@@ -9,40 +9,55 @@ public static class SqlServerHostingExtensions
 {
     private const string ConfigKeyPrefix = "Vermilion:SqlServer";
 
-    public static void UseSqlServer(
-        this ChatStorageCollection chatStorageCollection
-    )
+    extension(IChatStorageCollection chatStorageCollection)
     {
-        chatStorageCollection.Use(serviceProvider =>
+        public void UseSqlServer()
         {
-            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-
-            SqlServerChatStorageOptions options = new()
+            chatStorageCollection.Use(serviceProvider =>
             {
-                ConnectionString = configuration.GetRequiredValue($"{ConfigKeyPrefix}:ConnectionString"),
-                TableName = configuration[$"{ConfigKeyPrefix}:TableName"] ?? Defaults.TableName,
-                Schema = configuration[$"{ConfigKeyPrefix}:Schema"] ?? Defaults.Schema
+                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+
+                SqlServerChatStorageOptions options = new()
+                {
+                    ConnectionString = configuration.GetRequiredValue($"{ConfigKeyPrefix}:ConnectionString"),
+                    TableName = configuration[$"{ConfigKeyPrefix}:TableName"] ?? Defaults.TableName,
+                    Schema = configuration[$"{ConfigKeyPrefix}:Schema"] ?? Defaults.Schema
+                };
+
+                return new SqlServerChatStorage(
+                    options.ConnectionString,
+                    options.TableName,
+                    options.Schema
+                );
+            });
+        }
+
+        public void UseSqlServer(SqlServerChatStorageOptions options)
+        {
+            chatStorageCollection.Use(
+                new SqlServerChatStorage(
+                    options.ConnectionString,
+                    options.TableName,
+                    options.Schema
+                )
+            );
+        }
+
+        public void UseSqlServer(
+            string connectionString,
+            Action<SqlServerChatStorageOptions>? configure = null
+        )
+        {
+            var options = new SqlServerChatStorageOptions
+            {
+                ConnectionString = connectionString,
+                TableName = Defaults.TableName,
+                Schema = Defaults.Schema
             };
 
-            return new SqlServerChatStorage(
-                options.ConnectionString,
-                options.TableName,
-                options.Schema
-            );
-        });
-    }
+            configure?.Invoke(options);
 
-    public static void UseSqlServer(
-        this ChatStorageCollection chatStorageCollection,
-        SqlServerChatStorageOptions options
-    )
-    {
-        chatStorageCollection.Use(
-            new SqlServerChatStorage(
-                options.ConnectionString,
-                options.TableName,
-                options.Schema
-            )
-        );
+            chatStorageCollection.UseSqlServer(options);
+        }
     }
 }

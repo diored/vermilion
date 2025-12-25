@@ -9,7 +9,7 @@ public class CommandDefinition
     public UserRole RequiredRole { get; init; } = UserRole.Member;
     public CommandPriority Priority { get; init; } = CommandPriority.Medium;
     public bool LogHandling { get; init; } = false;
-    public ClientsPolicy ClientsPolicy { get; init; } = ClientsPolicy.EligibleOnly;
+    public CommandClientsPolicy ClientsPolicy { get; init; } = CommandClientsPolicy.EligibleOnly;
 
     public bool Matches(
         string command,
@@ -29,8 +29,8 @@ public class CommandDefinition
             senderRole.HasFlag(RequiredRole) &&
             ClientsPolicy switch
             {
-                ClientsPolicy.Any => true,
-                ClientsPolicy.EligibleOnly => clientIsEligible,
+                CommandClientsPolicy.Any => true,
+                CommandClientsPolicy.EligibleOnly => clientIsEligible,
                 _ => throw new ArgumentOutOfRangeException(nameof(ClientsPolicy), ClientsPolicy, null)
             };
     }
