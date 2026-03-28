@@ -23,7 +23,29 @@ public class CommandHandlersCollection(IServiceProvider services)
                     TailPolicy = TailPolicy.HasTail,
                     RequiredRole = requiredRole
                 },
-                (context, send) => send.TextAsync(replyFunc(context.Message.Tail))
+                (context, send, ct) => send.TextAsync(replyFunc(context.Message.Tail), ct)
+            )
+        );
+    }
+
+    public CommandHandlersCollection Add(
+        string command,
+        Func<string, CancellationToken, Task<string>> replyFunc,
+        UserRole requiredRole = UserRole.Member
+    )
+    {
+        return Add(
+            new SimpleCommandHandler(
+                new CommandDefinition
+                {
+                    Template = command,
+                    TailPolicy = TailPolicy.HasTail,
+                    RequiredRole = requiredRole
+                },
+                async (context, send, ct) => await send.TextAsync(
+                    await replyFunc(context.Message.Tail, ct),
+                    ct
+                )
             )
         );
     }
@@ -42,7 +64,29 @@ public class CommandHandlersCollection(IServiceProvider services)
                     TailPolicy = TailPolicy.HasNoTail,
                     RequiredRole = requiredRole
                 },
-                (context, send) => send.TextAsync(replyFunc())
+                (context, send, ct) => send.TextAsync(replyFunc(), ct)
+            )
+        );
+    }
+
+    public CommandHandlersCollection Add(
+        string command,
+        Func<CancellationToken, Task<string>> replyFunc,
+        UserRole requiredRole = UserRole.Member
+    )
+    {
+        return Add(
+            new SimpleCommandHandler(
+                new CommandDefinition
+                {
+                    Template = command,
+                    TailPolicy = TailPolicy.HasNoTail,
+                    RequiredRole = requiredRole
+                },
+                async (_, send, ct) => await send.TextAsync(
+                    await replyFunc(ct),
+                    ct
+                )
             )
         );
     }

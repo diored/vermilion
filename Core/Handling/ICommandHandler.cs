@@ -6,5 +6,5 @@ namespace DioRed.Vermilion.Handling;
 public interface ICommandHandler
 {
     CommandDefinition Definition { get; }
-    Task<bool> HandleAsync(MessageHandlingContext context, Feedback feedback);
+    Task<bool> HandleAsync(MessageHandlingContext context, Feedback feedback, CancellationToken ct = default);
 }

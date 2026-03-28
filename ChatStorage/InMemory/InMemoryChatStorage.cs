@@ -1,55 +1,61 @@
-using DioRed.Vermilion.ChatStorage.L10n;
-
 namespace DioRed.Vermilion.ChatStorage;
 
 public class InMemoryChatStorage : IChatStorage
 {
-    private readonly HashSet<ChatMetadata> _chats = [];
+    private readonly Dictionary<ChatId, ChatMetadata> _chats = [];
 
-    public Task AddChatAsync(ChatMetadata metadata)
+    public Task AddChatAsync(
+        ChatMetadata metadata,
+        string? title = null,
+        CancellationToken ct = default
+    )
     {
-        return AddChatAsync(metadata, string.Empty);
-    }
-
-    public Task AddChatAsync(ChatMetadata metadata, string title)
-    {
-        if (!_chats.Add(metadata))
+        ct.ThrowIfCancellationRequested();
+        if (!_chats.TryAdd(metadata.ChatId, metadata))
         {
-            throw new InvalidOperationException(
-                ExceptionMessages.ChatAlreadyStored_0
-            );
+            throw new ChatAlreadyExistsException(metadata.ChatId);
         }
 
         return Task.CompletedTask;
     }
 
-    public Task<ChatMetadata> GetChatAsync(ChatId chatId)
+    public Task<ChatMetadata> GetChatAsync(ChatId chatId, CancellationToken ct = default)
     {
-        return Task.FromResult(_chats.First(chat => chat.ChatId == chatId));
+        ct.ThrowIfCancellationRequested();
+        return _chats.TryGetValue(chatId, out ChatMetadata? chat)
+            ? Task.FromResult(chat)
+            : throw new ChatNotFoundException(chatId);
     }
 
-    public Task<ChatMetadata[]> GetChatsAsync()
+    public async IAsyncEnumerable<ChatMetadata> GetChatsAsync(
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default
+    )
     {
-        return Task.FromResult(_chats.ToArray());
+        foreach (ChatMetadata chat in _chats.Values)
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return chat;
+            await Task.CompletedTask.ConfigureAwait(false);
+        }
     }
 
-    public Task RemoveChatAsync(ChatId chatId)
+    public Task RemoveChatAsync(ChatId chatId, CancellationToken ct = default)
     {
-        _ = _chats.RemoveWhere(chatInfo => chatInfo.ChatId == chatId);
+        ct.ThrowIfCancellationRequested();
+        _chats.Remove(chatId);
 
         return Task.CompletedTask;
     }
 
-    public Task UpdateChatAsync(ChatMetadata metadata)
+    public Task UpdateChatAsync(ChatMetadata metadata, CancellationToken ct = default)
     {
-        ChatMetadata? existing = _chats.FirstOrDefault(chat => chat.ChatId == metadata.ChatId)
-            ?? throw new ArgumentException(
-                message: $"Chat {metadata.ChatId} not found",
-                paramName: nameof(metadata)
-            );
+        ct.ThrowIfCancellationRequested();
+        if (!_chats.ContainsKey(metadata.ChatId))
+        {
+            throw new ChatNotFoundException(metadata.ChatId);
+        }
 
-        _chats.Remove(existing);
-        _chats.Add(metadata);
+        _chats[metadata.ChatId] = metadata;
 
         return Task.CompletedTask;
     }

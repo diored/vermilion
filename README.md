@@ -46,5 +46,9 @@ Host.CreateDefaultBuilder(args)
 
 If you want to implement your own connector or chat storage, reference `DioRed.Vermilion.Abstractions`.
 
+## Upgrade notes
+
+If you are upgrading from `v14` to `v15`, see [MIGRATION.md](./MIGRATION.md).
+
 ## Examples
 See the `examples/` folder.

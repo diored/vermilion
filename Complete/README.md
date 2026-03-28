@@ -2,6 +2,14 @@
 
 A convenience package that brings together Vermilion Hosting + supported connectors and chat storages.
 
+Included chat storages:
+- `InMemory`
+- `JsonFile`
+- `Sqlite`
+- `SqlServer`
+- `AzureTable`
+- `MongoDb`
+
 Recommended for:
 - quick start / learning
 - small bots

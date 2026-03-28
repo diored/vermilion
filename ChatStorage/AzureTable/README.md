@@ -2,6 +2,8 @@
 
 Azure Table Storage based chat storage for Vermilion.
 
+The package applies idempotent storage migrations automatically on startup. Upgrading the NuGet package upgrades legacy row layouts in place when needed.
+
 ## Configuration
 
 ```json

@@ -8,8 +8,8 @@ public interface IConnector
 
     string? Version => null;
 
-    Task StartAsync(CancellationToken cancellationToken);
-    Task StopAsync(CancellationToken cancellationToken);
-    Task<PostResult> PostAsync(long internalId, IContent content);
+    Task StartAsync(CancellationToken ct);
+    Task StopAsync(CancellationToken ct);
+    Task<PostResult> PostAsync(long internalId, IContent content, CancellationToken ct = default);
     bool IsSuperAdmin(ChatId chatId);
 }

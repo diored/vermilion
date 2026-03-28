@@ -11,6 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DioRed.Vermilion" Version="14.0.0" />
+    <PackageReference Include="DioRed.Vermilion" Version="15.0.0-preview.1" />
   </ItemGroup>
 </Project>

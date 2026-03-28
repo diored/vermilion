@@ -12,13 +12,13 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>14.0.0</Version>
+    <Version>15.0.0-preview.1</Version>
     <PackageId>DioRed.Vermilion</PackageId>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>chatbot;bot;telegram;messaging;dotnet;generic-host;vermilion</PackageTags>
-    <Description>Complete Vermilion package for quick starts: Core + Hosting + Telegram connector + built-in chat storages (InMemory, JsonFile, SQL Server, Azure Table).</Description>
+    <Description>Complete Vermilion package for quick starts: Core + Hosting + Telegram connector + built-in chat storages (InMemory, JsonFile, SQLite, SQL Server, Azure Table, MongoDB).</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,12 +27,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DioRed.Vermilion.ChatStorage.AzureTable" Version="14.0.0" />
-    <PackageReference Include="DioRed.Vermilion.ChatStorage.InMemory" Version="14.0.0" />
-    <PackageReference Include="DioRed.Vermilion.ChatStorage.JsonFile" Version="14.0.0" />
-    <PackageReference Include="DioRed.Vermilion.ChatStorage.SqlServer" Version="14.0.0" />
-    <PackageReference Include="DioRed.Vermilion.Hosting" Version="14.0.0" />
-    <PackageReference Include="DioRed.Vermilion.Connectors.Telegram" Version="14.0.0" />
+    <PackageReference Include="DioRed.Vermilion.ChatStorage.AzureTable" Version="15.0.0-preview.1" />
+    <PackageReference Include="DioRed.Vermilion.ChatStorage.InMemory" Version="15.0.0-preview.1" />
+    <PackageReference Include="DioRed.Vermilion.ChatStorage.JsonFile" Version="15.0.0-preview.1" />
+    <PackageReference Include="DioRed.Vermilion.ChatStorage.MongoDb" Version="15.0.0-preview.1" />
+    <PackageReference Include="DioRed.Vermilion.ChatStorage.Sqlite" Version="15.0.0-preview.1" />
+    <PackageReference Include="DioRed.Vermilion.ChatStorage.SqlServer" Version="15.0.0-preview.1" />
+    <PackageReference Include="DioRed.Vermilion.Hosting" Version="15.0.0-preview.1" />
+    <PackageReference Include="DioRed.Vermilion.Connectors.Telegram" Version="15.0.0-preview.1" />
   </ItemGroup>
 
 </Project>

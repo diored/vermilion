@@ -1,4 +1,5 @@
 using DioRed.Vermilion.Connectors;
+using System.Collections.Immutable;
 
 namespace DioRed.Vermilion.Handling.Context;
 
@@ -10,6 +11,6 @@ public class ChatContext
     public required IConnector Connector { get; init; }
 
     public ChatId Id => Client.Metadata.ChatId;
-    public HashSet<string> Tags => Client.Metadata.Tags;
+    public IImmutableSet<string> Tags => Client.Metadata.Tags;
     public Dictionary<string, object?> RuntimeValues => Client.RuntimeValues;
 }

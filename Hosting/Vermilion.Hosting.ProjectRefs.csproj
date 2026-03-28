@@ -16,7 +16,7 @@
   <ItemGroup>
     <PackageReference Include="DioRed.Common.ConfigurationExtensions" Version="0.4.0" />
     <PackageReference Include="DioRed.Common.Logging" Version="4.7.2" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
   </ItemGroup>
 
   <ItemGroup>

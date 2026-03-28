@@ -17,7 +17,7 @@ public class TelegramConnector : IConnector
 {
     private readonly static string _version = typeof(TelegramConnector).Assembly.GetName().Version.Normalize();
 
-    private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private CancellationTokenSource? _cancellationTokenSource;
     private CancellationTokenSource? _linkedCancellationTokenSource;
     private readonly TelegramBotClient _telegramBotClient;
     private readonly ILogger<TelegramConnector> _logger;
@@ -41,14 +41,17 @@ public class TelegramConnector : IConnector
 
     public string Version => _version;
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken ct)
     {
         // Resolve bot info lazily to avoid sync-over-async deadlocks during DI construction.
-        _botInfo ??= await _telegramBotClient.GetMe(cancellationToken).ConfigureAwait(false);
+        _botInfo ??= await _telegramBotClient.GetMe(ct).ConfigureAwait(false);
+
+        _cancellationTokenSource?.Dispose();
+        _cancellationTokenSource = new CancellationTokenSource();
 
         _linkedCancellationTokenSource?.Dispose();
         _linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
-            cancellationToken,
+            ct,
             _cancellationTokenSource.Token
         );
 
@@ -94,9 +97,12 @@ public class TelegramConnector : IConnector
         );
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public Task StopAsync(CancellationToken ct)
     {
-        _cancellationTokenSource.Cancel();
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+        _cancellationTokenSource = null;
+
         _linkedCancellationTokenSource?.Cancel();
         _linkedCancellationTokenSource?.Dispose();
         _linkedCancellationTokenSource = null;
@@ -106,16 +112,17 @@ public class TelegramConnector : IConnector
 
     public async Task<PostResult> PostAsync(
         long internalId,
-        IContent content
+        IContent content,
+        CancellationToken ct = default
     )
     {
         Func<Task>? actionFactory = content switch
         {
-            TextContent c => () => SendTextAsync(internalId, c.Text),
-            HtmlContent c => () => SendTextAsync(internalId, c.Html, ParseMode.Html),
-            ImageBytesContent c => () => SendPhotoBytesAsync(internalId, c.Content),
-            ImageStreamContent c => () => SendPhotoAsync(internalId, InputFile.FromStream(c.Stream)),
-            ImageUrlContent c => () => SendPhotoAsync(internalId, InputFile.FromUri(c.Url)),
+            TextContent c => () => SendTextAsync(internalId, c.Text, ct: ct),
+            HtmlContent c => () => SendTextAsync(internalId, c.Html, ParseMode.Html, ct),
+            ImageBytesContent c => () => SendPhotoBytesAsync(internalId, c.Content, ct),
+            ImageStreamContent c => () => SendPhotoAsync(internalId, InputFile.FromStream(c.Stream), ct),
+            ImageUrlContent c => () => SendPhotoAsync(internalId, InputFile.FromUri(c.Url), ct),
             _ => null
         };
 
@@ -124,7 +131,7 @@ public class TelegramConnector : IConnector
             return PostResult.ContentTypeNotSupported;
         }
 
-        return await DoActionAsync(actionFactory, internalId);
+        return await DoActionAsync(actionFactory, internalId, ct);
     }
 
     public bool IsSuperAdmin(ChatId chatId)
@@ -140,7 +147,7 @@ public class TelegramConnector : IConnector
 
     private async Task HandleMessageReceived(
         Message message,
-        CancellationToken cancellationToken
+        CancellationToken ct
     )
     {
         if (message is not { Type: MessageType.Text } or { Text: null } or { From: not { IsBot: false } })
@@ -156,7 +163,7 @@ public class TelegramConnector : IConnector
             () => GetUserRoleAsync(
                 message.From.Id,
                 message.Chat,
-                cancellationToken
+                ct
             ),
             message.Chat.Id
         );
@@ -181,7 +188,7 @@ public class TelegramConnector : IConnector
 
     private async Task HandleCallbackQueryReceived(
         CallbackQuery callbackQuery,
-        CancellationToken cancellationToken
+        CancellationToken ct
     )
     {
         if (callbackQuery is { Data: null } or { Message: null })
@@ -193,7 +200,7 @@ public class TelegramConnector : IConnector
             () => GetUserRoleAsync(
                 callbackQuery.From.Id,
                 callbackQuery.Message.Chat,
-                cancellationToken
+                ct
             ),
             callbackQuery.Message.Chat.Id
         );
@@ -219,7 +226,7 @@ public class TelegramConnector : IConnector
     private async Task<UserRole> GetUserRoleAsync(
         long userId,
         Chat chat,
-        CancellationToken cancellationToken
+        CancellationToken ct
     )
     {
         if (userId == -1)
@@ -244,7 +251,7 @@ public class TelegramConnector : IConnector
             ChatMember chatMember = await _telegramBotClient.GetChatMember(
                 chat.Id,
                 userId,
-                cancellationToken
+                ct
             );
 
             if (chatMember.Status is ChatMemberStatus.Administrator or ChatMemberStatus.Creator)
@@ -259,24 +266,28 @@ public class TelegramConnector : IConnector
     private async Task SendTextAsync(
         long internalId,
         string text,
-        ParseMode parseMode = ParseMode.None
+        ParseMode parseMode = ParseMode.None,
+        CancellationToken ct = default
     )
     {
         _ = await _telegramBotClient.SendMessage(
             internalId,
             text,
-            parseMode: parseMode
+            parseMode: parseMode,
+            cancellationToken: ct
         );
     }
 
     private async Task SendPhotoAsync(
         long internalId,
-        InputFile file
+        InputFile file,
+        CancellationToken ct = default
     )
     {
         _ = await _telegramBotClient.SendPhoto(
             internalId,
-            file
+            file,
+            cancellationToken: ct
         );
     }
 
@@ -298,7 +309,8 @@ public class TelegramConnector : IConnector
 
     private async Task<PostResult> DoActionAsync(
         Func<Task> actionFactory,
-        long internalId
+        long internalId,
+        CancellationToken ct
     )
     {
         const int maxRetryCount = 5;
@@ -306,7 +318,7 @@ public class TelegramConnector : IConnector
         {
             if (i != 0)
             {
-                await Task.Delay(TimeSpan.FromSeconds(5 + (i + 1)));
+                await Task.Delay(TimeSpan.FromSeconds(5 + (i + 1)), ct);
             }
 
             try
@@ -444,10 +456,10 @@ public class TelegramConnector : IConnector
         return (SocketException)exception;
     }
 
-    private async Task SendPhotoBytesAsync(long internalId, byte[] bytes)
+    private async Task SendPhotoBytesAsync(long internalId, byte[] bytes, CancellationToken ct)
     {
         await using var stream = new MemoryStream(bytes, writable: false);
-        await SendPhotoAsync(internalId, InputFile.FromStream(stream)).ConfigureAwait(false);
+        await SendPhotoAsync(internalId, InputFile.FromStream(stream), ct).ConfigureAwait(false);
     }
 
     private static PostResult GetPostResult(TelegramException tgEx)

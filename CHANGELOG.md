@@ -1,5 +1,54 @@
 # Changelog
 
+## 15.0.0
+
+See also: [MIGRATION.md](./MIGRATION.md)
+
+### Added
+- **Chat storages**:
+  - new `DioRed.Vermilion.ChatStorage.Sqlite` package
+  - new `DioRed.Vermilion.ChatStorage.MongoDb` package
+- **Examples**:
+  - `examples/QuickStart.Telegram.Sqlite`
+  - `examples/QuickStart.Telegram.MongoDb`
+- **Storage migrations**:
+  - versioned runtime schema management for SQL Server
+  - built-in compatibility/migration flow for Azure Table keys
+  - schema/version handling for SQLite and MongoDB providers
+- **Typed storage exceptions**:
+  - `ChatAlreadyExistsException`
+  - `ChatNotFoundException`
+  - `StorageMigrationException`
+- **Test infrastructure**:
+  - TUnit-based storage test projects
+  - Docker/Testcontainers integration tests for SQL Server, Azurite, and MongoDB
+  - migration coverage for legacy storage formats
+- **Documentation**:
+  - `MIGRATION.md` for upgrading from `v14` to `v15`
+
+### Fixed
+- **Storage identity**:
+  - all supported persistent chat storages now treat `ChatId` as `ConnectorKey + Type + Id`
+  - SQL Server and Azure Table no longer alias chats that share numeric ids across chat types
+- **InMemory chat storage**: duplicate chats are now detected by `ChatId`, not by object reference
+- **Telegram connector**: restart after `StopAsync()` works correctly
+- **BotCore inbound processing**:
+  - replaced fire-and-forget message handling with a bounded queue
+  - shutdown now coordinates message pump completion more safely
+- **Azurite/SQL integration coverage**: legacy migration paths are now exercised automatically in tests
+
+### Breaking changes
+- `IChatStorage` was redesigned:
+  - all async methods now use `CancellationToken ct = default`
+  - `GetChatsAsync(...)` now returns `IAsyncEnumerable<ChatMetadata>`
+  - `AddChatAsync(...)` is now a single overload with optional `title`
+- `ChatMetadata` is now immutable
+- chat titles are treated as storage-only data and are not part of runtime `ChatMetadata`
+- `IConnector.PostAsync(...)` now accepts `CancellationToken ct = default`
+- `ICommandHandler.HandleAsync(...)` now accepts `CancellationToken ct = default`
+- storage providers now throw typed Vermilion exceptions instead of relying on generic `ArgumentException` / `InvalidOperationException` for common storage cases
+- hosting helpers were updated to the new cancellation-aware handler model
+
 ## 14.0.0
 
 ### Added

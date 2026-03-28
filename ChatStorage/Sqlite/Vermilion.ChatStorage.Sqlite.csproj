@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>DioRed.Vermilion.ChatStorage</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Authors>DioRED</Authors>
+    <Version>15.0.0-preview.1</Version>
+    <PackageId>DioRed.Vermilion.ChatStorage.Sqlite</PackageId>
+    <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
+    <PackageIcon>packageIcon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>chatbot;bot;sqlite;messaging;dotnet;generic-host;vermilion</PackageTags>
+    <Description>SQLite based chat storage for Vermilion with built-in schema migrations and Generic Host integration.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\Assets\packageIcon.png" Pack="true" PackagePath="." />
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DioRed.Common.ConfigurationExtensions" Version="0.4.0" />
+    <PackageReference Include="DioRed.Vermilion.Abstractions" Version="15.0.0-preview.1" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
+  </ItemGroup>
+
+</Project>

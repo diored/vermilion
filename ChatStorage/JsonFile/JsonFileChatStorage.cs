@@ -1,7 +1,5 @@
 using System.Text.Json;
 
-using DioRed.Vermilion.ChatStorage.JsonFile.L10n;
-
 namespace DioRed.Vermilion.ChatStorage;
 
 public sealed class JsonFileChatStorage : IChatStorage
@@ -25,18 +23,20 @@ public sealed class JsonFileChatStorage : IChatStorage
         };
     }
 
-    public Task AddChatAsync(ChatMetadata metadata) => AddChatAsync(metadata, string.Empty);
-
-    public async Task AddChatAsync(ChatMetadata metadata, string title)
+    public async Task AddChatAsync(
+        ChatMetadata metadata,
+        string? title = null,
+        CancellationToken ct = default
+    )
     {
-        await _gate.WaitAsync().ConfigureAwait(false);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await EnsureLoadedAsync().ConfigureAwait(false);
+            await EnsureLoadedAsync(ct).ConfigureAwait(false);
 
             if (_chats.ContainsKey(metadata.ChatId))
             {
-                throw new InvalidOperationException(ExceptionMessages.ChatAlreadyStored_0);
+                throw new ChatAlreadyExistsException(metadata.ChatId);
             }
 
             _chats[metadata.ChatId] = new StoredChat
@@ -46,7 +46,7 @@ public sealed class JsonFileChatStorage : IChatStorage
                 Tags = [.. metadata.Tags]
             };
 
-            await PersistAsync().ConfigureAwait(false);
+            await PersistAsync(ct).ConfigureAwait(false);
         }
         finally
         {
@@ -54,16 +54,16 @@ public sealed class JsonFileChatStorage : IChatStorage
         }
     }
 
-    public async Task<ChatMetadata> GetChatAsync(ChatId chatId)
+    public async Task<ChatMetadata> GetChatAsync(ChatId chatId, CancellationToken ct = default)
     {
-        await _gate.WaitAsync().ConfigureAwait(false);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await EnsureLoadedAsync().ConfigureAwait(false);
+            await EnsureLoadedAsync(ct).ConfigureAwait(false);
 
             if (!_chats.TryGetValue(chatId, out StoredChat? stored))
             {
-                throw new ArgumentException($"Chat {chatId} not found", nameof(chatId));
+                throw new ChatNotFoundException(chatId);
             }
 
             return stored.ToMetadata();
@@ -74,30 +74,18 @@ public sealed class JsonFileChatStorage : IChatStorage
         }
     }
 
-    public async Task<ChatMetadata[]> GetChatsAsync()
+    public async IAsyncEnumerable<ChatMetadata> GetChatsAsync(
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default
+    )
     {
-        await _gate.WaitAsync().ConfigureAwait(false);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await EnsureLoadedAsync().ConfigureAwait(false);
-            return _chats.Values.Select(x => x.ToMetadata()).ToArray();
-        }
-        finally
-        {
-            _gate.Release();
-        }
-    }
-
-    public async Task RemoveChatAsync(ChatId chatId)
-    {
-        await _gate.WaitAsync().ConfigureAwait(false);
-        try
-        {
-            await EnsureLoadedAsync().ConfigureAwait(false);
-
-            if (_chats.Remove(chatId))
+            await EnsureLoadedAsync(ct).ConfigureAwait(false);
+            foreach (ChatMetadata chat in _chats.Values.Select(x => x.ToMetadata()).ToArray())
             {
-                await PersistAsync().ConfigureAwait(false);
+                ct.ThrowIfCancellationRequested();
+                yield return chat;
             }
         }
         finally
@@ -106,22 +94,40 @@ public sealed class JsonFileChatStorage : IChatStorage
         }
     }
 
-    public async Task UpdateChatAsync(ChatMetadata metadata)
+    public async Task RemoveChatAsync(ChatId chatId, CancellationToken ct = default)
     {
-        await _gate.WaitAsync().ConfigureAwait(false);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await EnsureLoadedAsync().ConfigureAwait(false);
+            await EnsureLoadedAsync(ct).ConfigureAwait(false);
+
+            if (_chats.Remove(chatId))
+            {
+                await PersistAsync(ct).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task UpdateChatAsync(ChatMetadata metadata, CancellationToken ct = default)
+    {
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await EnsureLoadedAsync(ct).ConfigureAwait(false);
 
             if (!_chats.TryGetValue(metadata.ChatId, out StoredChat? existing))
             {
-                throw new ArgumentException($"Chat {metadata.ChatId} not found", nameof(metadata));
+                throw new ChatNotFoundException(metadata.ChatId);
             }
 
             existing.Tags = [.. metadata.Tags];
             _chats[metadata.ChatId] = existing;
 
-            await PersistAsync().ConfigureAwait(false);
+            await PersistAsync(ct).ConfigureAwait(false);
         }
         finally
         {
@@ -129,7 +135,7 @@ public sealed class JsonFileChatStorage : IChatStorage
         }
     }
 
-    private async Task EnsureLoadedAsync()
+    private async Task EnsureLoadedAsync(CancellationToken ct)
     {
         if (_loaded) return;
 
@@ -140,7 +146,7 @@ public sealed class JsonFileChatStorage : IChatStorage
             return;
         }
 
-        string json = await File.ReadAllTextAsync(_filePath).ConfigureAwait(false);
+        string json = await File.ReadAllTextAsync(_filePath, ct).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(json)) return;
 
         StorageFile? file = JsonSerializer.Deserialize<StorageFile>(json, _jsonOptions);
@@ -153,7 +159,7 @@ public sealed class JsonFileChatStorage : IChatStorage
         }
     }
 
-    private async Task PersistAsync()
+    private async Task PersistAsync(CancellationToken ct)
     {
         string? dir = Path.GetDirectoryName(_filePath);
         if (!string.IsNullOrWhiteSpace(dir))
@@ -172,7 +178,7 @@ public sealed class JsonFileChatStorage : IChatStorage
         string json = JsonSerializer.Serialize(file, _jsonOptions);
 
         string tempPath = _filePath + ".tmp";
-        await File.WriteAllTextAsync(tempPath, json).ConfigureAwait(false);
+        await File.WriteAllTextAsync(tempPath, json, ct).ConfigureAwait(false);
 
         if (File.Exists(_filePath))
         {

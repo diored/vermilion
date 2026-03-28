@@ -2,6 +2,8 @@
 
 SQL Server based chat storage for Vermilion.
 
+The package applies idempotent schema migrations automatically on startup. Upgrading the NuGet package upgrades the storage schema in place when needed.
+
 ## Configuration
 
 ```json

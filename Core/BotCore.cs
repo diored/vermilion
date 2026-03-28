@@ -10,6 +10,8 @@ using DioRed.Vermilion.Messages;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
+using System.Collections.Immutable;
 
 namespace DioRed.Vermilion;
 
@@ -24,6 +26,9 @@ public class BotCore : IHostedService
     private readonly BotOptions _options;
     private readonly ClientsPolicy _clientsPolicy;
     private readonly ILogger<BotCore> _logger;
+    private BlockingCollection<MessagePostedEventArgs>? _incomingMessages;
+    private Task? _messagePumpTask;
+    private CancellationTokenSource? _messagePumpCancellationTokenSource;
 
     public BotCore(
         BotCoreSettings settings,
@@ -100,7 +105,7 @@ public class BotCore : IHostedService
 
     public BotCoreState State { get; private set; } = BotCoreState.NotInitialized;
 
-    public async Task StartAsync(CancellationToken cancellationToken = default)
+    public async Task StartAsync(CancellationToken ct = default)
     {
         bool needsInitialization = false;
 
@@ -154,13 +159,21 @@ public class BotCore : IHostedService
             State = BotCoreState.Starting;
         }
 
+        _messagePumpCancellationTokenSource?.Dispose();
+        _messagePumpCancellationTokenSource = new CancellationTokenSource();
+        _incomingMessages = new BlockingCollection<MessagePostedEventArgs>(boundedCapacity: 256);
+        _messagePumpTask = Task.Run(
+            () => RunMessagePumpAsync(_messagePumpCancellationTokenSource.Token),
+            _messagePumpCancellationTokenSource.Token
+        );
+
         bool atLeastOneConnectorStarted = false;
 
         foreach ((string key, IConnector connector) in _connectors.Enumerate())
         {
             try
             {
-                await connector.StartAsync(cancellationToken);
+                await connector.StartAsync(ct);
 
                 atLeastOneConnectorStarted = true;
 
@@ -190,12 +203,26 @@ public class BotCore : IHostedService
             }
         }
 
+        if (!atLeastOneConnectorStarted)
+        {
+            _incomingMessages?.CompleteAdding();
+            if (_messagePumpTask is not null)
+            {
+                await _messagePumpTask.ConfigureAwait(false);
+            }
+            _messagePumpCancellationTokenSource?.Dispose();
+            _messagePumpCancellationTokenSource = null;
+            _messagePumpTask = null;
+            _incomingMessages?.Dispose();
+            _incomingMessages = null;
+        }
+
         State = atLeastOneConnectorStarted
             ? BotCoreState.Started
             : BotCoreState.Stopped;
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken = default)
+    public async Task StopAsync(CancellationToken ct = default)
     {
         lock (_sync)
         {
@@ -226,7 +253,7 @@ public class BotCore : IHostedService
         {
             try
             {
-                await connector.StopAsync(cancellationToken);
+                await connector.StopAsync(ct);
 
                 _logger.LogInformation(
                     LogMessages.ConnectorStopped_1,
@@ -245,70 +272,94 @@ public class BotCore : IHostedService
             }
         }
 
+        if (!atLeastOneConnectorFailedToStop)
+        {
+            _incomingMessages?.CompleteAdding();
+            if (_messagePumpTask is not null)
+            {
+                await _messagePumpTask.ConfigureAwait(false);
+            }
+            _messagePumpCancellationTokenSource?.Dispose();
+            _messagePumpCancellationTokenSource = null;
+            _messagePumpTask = null;
+            _incomingMessages?.Dispose();
+            _incomingMessages = null;
+        }
+
         State = atLeastOneConnectorFailedToStop
             ? BotCoreState.Started
             : BotCoreState.Stopped;
     }
 
-    public Task PostAsync(Receiver receiver, string text)
+    public Task PostAsync(Receiver receiver, string text, CancellationToken ct = default)
     {
         return PostAsync(
             receiver,
             new TextContent
             {
                 Text = text
-            }
+            },
+            ct
         );
     }
 
-    public Task PostAsync(Receiver receiver, IContent content)
+    public Task PostAsync(Receiver receiver, IContent content, CancellationToken ct = default)
     {
         return PostAsync(
             receiver,
-            _ => content
+            _ => content,
+            ct
         );
     }
 
-    public Task PostAsync(Receiver receiver, Func<ChatMetadata, string> textBuilder)
+    public Task PostAsync(Receiver receiver, Func<ChatMetadata, string> textBuilder, CancellationToken ct = default)
     {
         return PostAsync(
             receiver,
             chatMetadata => new TextContent
             {
                 Text = textBuilder(chatMetadata)
-            }
+            },
+            ct
         );
     }
 
-    public Task PostAsync(Receiver receiver, Func<ChatMetadata, IContent> contentBuilder)
+    public Task PostAsync(Receiver receiver, Func<ChatMetadata, IContent> contentBuilder, CancellationToken ct = default)
     {
         return PostAsync(
             receiver,
             chatMetadata => Task.FromResult(
                 contentBuilder(chatMetadata)
-            )
+            ),
+            ct
         );
     }
 
-    public async Task PostAsync(Receiver receiver, Func<ChatMetadata, Task<IContent>> contentBuilder)
+    public async Task PostAsync(
+        Receiver receiver,
+        Func<ChatMetadata, Task<IContent>> contentBuilder,
+        CancellationToken ct = default
+    )
     {
         ChatClient[] chatClients = GetChatClientsByReceiver(receiver);
 
         foreach (ChatClient chatClient in chatClients)
         {
+            ct.ThrowIfCancellationRequested();
             IContent content = await contentBuilder(chatClient.Metadata);
             IConnector connector = _connectors[chatClient.Metadata.ChatId.ConnectorKey];
 
             PostResult postResult = await connector.PostAsync(
                 chatClient.Metadata.ChatId.Id,
-                content
+                content,
+                ct
             );
 
             await ProcessResultAsync(postResult, chatClient.Metadata, content);
         }
     }
 
-    internal async Task AddTagAsync(Receiver receiver, string tag)
+    internal async Task AddTagAsync(Receiver receiver, string tag, CancellationToken ct = default)
     {
         ChatClient[] chatClients = GetChatClientsByReceiver(receiver);
 
@@ -319,14 +370,21 @@ public class BotCore : IHostedService
                 continue;
             }
 
-            chatClient.Metadata.Tags.Add(tag);
+            ChatMetadata updatedMetadata = chatClient.Metadata with
+            {
+                Tags = chatClient.Metadata.Tags.Add(tag)
+            };
 
-            await _chatStorage.UpdateChatAsync(chatClient.Metadata);
-            await ReloadChatClientAsync(chatClient.Metadata.ChatId);
+            await _chatStorage.UpdateChatAsync(updatedMetadata, ct);
+            _chatClientsManager.Set(updatedMetadata.ChatId, new ChatClient
+            {
+                Metadata = updatedMetadata,
+                RuntimeValues = chatClient.RuntimeValues
+            });
         }
     }
 
-    internal async Task RemoveTagAsync(Receiver receiver, string tag)
+    internal async Task RemoveTagAsync(Receiver receiver, string tag, CancellationToken ct = default)
     {
         ChatClient[] chatClients = GetChatClientsByReceiver(receiver);
 
@@ -337,19 +395,24 @@ public class BotCore : IHostedService
                 continue;
             }
 
-            chatClient.Metadata.Tags.Remove(tag);
+            ChatMetadata updatedMetadata = chatClient.Metadata with
+            {
+                Tags = chatClient.Metadata.Tags.Remove(tag)
+            };
 
-            await _chatStorage.UpdateChatAsync(chatClient.Metadata);
-            await ReloadChatClientAsync(chatClient.Metadata.ChatId);
+            await _chatStorage.UpdateChatAsync(updatedMetadata, ct);
+            _chatClientsManager.Set(updatedMetadata.ChatId, new ChatClient
+            {
+                Metadata = updatedMetadata,
+                RuntimeValues = chatClient.RuntimeValues
+            });
         }
     }
 
     private async Task InitializeAsync()
     {
         // Load saved chats.
-        ChatMetadata[] chats = await _chatStorage.GetChatsAsync().ConfigureAwait(false);
-
-        foreach (ChatMetadata chatMetadata in chats)
+        await foreach (ChatMetadata chatMetadata in _chatStorage.GetChatsAsync())
         {
             _chatClientsManager.Add(chatMetadata);
         }
@@ -467,7 +530,32 @@ public class BotCore : IHostedService
         }
     }
 
-    private async void OnMessagePosted(MessagePostedEventArgs args)
+    private void OnMessagePosted(MessagePostedEventArgs args)
+    {
+        try
+        {
+            _incomingMessages?.Add(args);
+        }
+        catch (InvalidOperationException)
+        {
+            // StopAsync completed the queue while a connector callback was still in flight.
+        }
+    }
+
+    private async Task RunMessagePumpAsync(CancellationToken ct)
+    {
+        if (_incomingMessages is null)
+        {
+            return;
+        }
+
+        foreach (MessagePostedEventArgs args in _incomingMessages.GetConsumingEnumerable(ct))
+        {
+            await ProcessMessageAsync(args, ct).ConfigureAwait(false);
+        }
+    }
+
+    private async Task ProcessMessageAsync(MessagePostedEventArgs args, CancellationToken ct)
     {
         try
         {
@@ -501,11 +589,11 @@ public class BotCore : IHostedService
                 Sender = senderContext
             };
 
-            Feedback feedback = new(this, context.Chat.Id);
+            Feedback feedback = new(this, context.Chat.Id, ct);
 
             foreach (var handler in handlers)
             {
-                if (await handler.HandleAsync(context, feedback))
+                if (await handler.HandleAsync(context, feedback, ct))
                 {
                     if (_options.LogCommands && handler.Definition.LogHandling)
                     {
@@ -533,13 +621,16 @@ public class BotCore : IHostedService
                 LogMessages.ErrorOccurred_0
             );
         }
-        return;
 
         async Task<ChatContext> BuildChatContextAsync()
         {
             if (_chatClientsManager.Get(args.ChatId) is not { } chatClient)
             {
-                ChatMetadata chatMetadata = new() { ChatId = args.ChatId };
+                ChatMetadata chatMetadata = new()
+                {
+                    ChatId = args.ChatId,
+                    Tags = ImmutableHashSet<string>.Empty
+                };
 
                 if (_chatClientsManager.Add(chatMetadata))
                 {

@@ -20,3 +20,9 @@ Host.CreateDefaultBuilder(args)
 ```
 
 > Note: Vermilion requires exactly one ChatStorage, at least one Connector, and at least one CommandHandler.
+
+`v15` notes:
+
+- command handlers are cancellation-aware
+- simple registration helpers support both sync delegates and `CancellationToken`-aware async delegates
+- chat storage providers use streaming reads and immutable `ChatMetadata`

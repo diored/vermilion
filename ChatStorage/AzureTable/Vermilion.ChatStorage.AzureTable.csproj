@@ -12,7 +12,7 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
     <PackageId>DioRed.Vermilion.ChatStorage.AzureTable</PackageId>
-    <Version>14.0.0</Version>
+    <Version>15.0.0-preview.1</Version>
     <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <PackageReference Include="DioRed.Common.AzureStorage" Version="4.0.0" />
-    <PackageReference Include="DioRed.Vermilion.Abstractions" Version="14.0.0" />
+    <PackageReference Include="DioRed.Vermilion.Abstractions" Version="15.0.0-preview.1" />
   </ItemGroup>
 
 </Project>
