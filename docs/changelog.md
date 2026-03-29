@@ -1,5 +1,5 @@
 # Changelog
 
-The full changelog lives in the repository root:
+Read the full changelog on GitHub:
 
-- [CHANGELOG.md](../CHANGELOG.md)
+- [CHANGELOG.md](https://github.com/diored/vermilion/blob/main/CHANGELOG.md)

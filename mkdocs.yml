@@ -4,6 +4,8 @@ repo_url: https://github.com/diored/vermilion
 repo_name: diored/vermilion
 theme:
   name: material
+  logo: assets/packageIcon.png
+  favicon: assets/packageIcon.png
   palette:
     primary: custom
   features:

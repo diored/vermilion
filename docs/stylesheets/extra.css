@@ -4,5 +4,51 @@
   --md-primary-fg-color: #D10D10;
   --md-primary-fg-color--light: #e13a3a;
   --md-primary-fg-color--dark: #a30a0a;
+  --md-accent-fg-color: #D10D10;
   --md-text-font: "PT Sans";
+  --vermilion-surface-tint: rgba(209, 13, 16, 0.035);
+}
+
+.md-main {
+  background:
+    radial-gradient(circle at top left, rgba(209, 13, 16, 0.06), transparent 24rem),
+    linear-gradient(180deg, var(--vermilion-surface-tint), transparent 24rem);
+}
+
+.md-header {
+  box-shadow: 0 0 0.75rem rgba(209, 13, 16, 0.18);
+}
+
+.md-header__button.md-logo img,
+.md-header__button.md-logo svg {
+  height: 1.7rem;
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.md-typeset a,
+.md-nav__link--active,
+.md-nav__link:focus,
+.md-nav__link:hover {
+  color: #D10D10;
+}
+
+.md-typeset code {
+  border-radius: 0.35rem;
+}
+
+.md-typeset pre > code {
+  border: 1px solid rgba(209, 13, 16, 0.12);
+  box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.04);
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 0.5rem;
+  box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.04);
 }
