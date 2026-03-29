@@ -12,12 +12,17 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>15.0.0-preview.1</Version>
+    <Version>15.0.0-preview.2</Version>
     <PackageId>DioRed.Vermilion.Abstractions</PackageId>
-    <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>chatbot;bot;telegram;messaging;dotnet;vermilion;abstractions</PackageTags>
+    <PackageProjectUrl>https://github.com/diored/vermilion</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/diored/vermilion.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageReleaseNotes>See CHANGELOG.md and MIGRATION.md in the Vermilion repository for release details and upgrade notes.</PackageReleaseNotes>
+    <PackageTags>chatbot;bot;framework;abstractions;contracts;connectors;storage;dotnet;vermilion</PackageTags>
     <Description>Public contracts for Vermilion: connectors, chat storage and interaction content primitives. Reference this package when implementing custom connectors or storages.</Description>
   </PropertyGroup>
 

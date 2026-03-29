@@ -11,11 +11,16 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>15.0.0-preview.1</Version>
+    <Version>15.0.0-preview.2</Version>
     <PackageId>DioRed.Vermilion.ChatStorage.JsonFile</PackageId>
-    <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/diored/vermilion</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/diored/vermilion.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageReleaseNotes>See CHANGELOG.md and MIGRATION.md in the Vermilion repository for release details and upgrade notes.</PackageReleaseNotes>
     <PackageTags>chatbot;bot;storage;json;file;dotnet;vermilion</PackageTags>
     <Description>JSON file based chat storage for Vermilion. Stores chat metadata in a single local file with atomic writes.</Description>
   </PropertyGroup>
@@ -26,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DioRed.Vermilion.Abstractions" Version="15.0.0-preview.1" />
+    <PackageReference Include="DioRed.Vermilion.Abstractions" Version="15.0.0-preview.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
   </ItemGroup>

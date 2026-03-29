@@ -12,11 +12,16 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
     <PackageId>DioRed.Vermilion.ChatStorage.AzureTable</PackageId>
-    <Version>15.0.0-preview.1</Version>
-    <PackageLicenseExpression>CC-BY-4.0</PackageLicenseExpression>
+    <Version>15.0.0-preview.2</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>chatbot;bot;telegram;messaging;dotnet;generic-host;vermilion</PackageTags>
+    <PackageProjectUrl>https://github.com/diored/vermilion</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/diored/vermilion.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageReleaseNotes>See CHANGELOG.md and MIGRATION.md in the Vermilion repository for release details and upgrade notes.</PackageReleaseNotes>
+    <PackageTags>chatbot;bot;storage;azure;azure-table;table-storage;dotnet;vermilion</PackageTags>
     <Description>Azure Table Storage chat storage for Vermilion. Automatically ensures the target table exists.</Description>
   </PropertyGroup>
 
@@ -27,7 +32,7 @@
 
   <ItemGroup>
     <PackageReference Include="DioRed.Common.AzureStorage" Version="4.0.0" />
-    <PackageReference Include="DioRed.Vermilion.Abstractions" Version="15.0.0-preview.1" />
+    <PackageReference Include="DioRed.Vermilion.Abstractions" Version="15.0.0-preview.2" />
   </ItemGroup>
 
 </Project>

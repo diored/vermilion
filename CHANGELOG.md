@@ -25,8 +25,12 @@ See also: [MIGRATION.md](./MIGRATION.md)
   - migration coverage for legacy storage formats
 - **Documentation**:
   - `MIGRATION.md` for upgrading from `v14` to `v15`
+  - `LICENSE` file with the MIT license text
 
 ### Fixed
+- **Package metadata**:
+  - NuGet tags are now package-specific instead of copied across unrelated packages
+  - package metadata now includes repository/project links and stable release-notes pointers
 - **Storage identity**:
   - all supported persistent chat storages now treat `ChatId` as `ConnectorKey + Type + Id`
   - SQL Server and Azure Table no longer alias chats that share numeric ids across chat types
