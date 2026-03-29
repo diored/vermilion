@@ -1,0 +1,30 @@
+site_name: Vermilion
+site_description: Simple setup and swappable implementations for .NET chat bots.
+repo_url: https://github.com/diored/vermilion
+repo_name: diored/vermilion
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Beginner Path: getting-started/beginner-path.md
+      - Detailed Path: getting-started/detailed-path.md
+      - Manual Path: getting-started/manual-path.md
+  - Chat Storage:
+      - Overview: chat-storage/index.md
+  - Connectors:
+      - Telegram: connectors/telegram.md
+  - Migration:
+      - v14 to v15: migration/v14-to-v15.md
+  - Changelog: changelog.md

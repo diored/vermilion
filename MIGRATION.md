@@ -140,6 +140,53 @@ public async Task<bool> HandleAsync(
 }
 ```
 
+## Scheduled Jobs
+
+`v15` uses the more general `IScheduledJob` contract instead of the old daily-only abstraction.
+
+Old `v13` / `v14` style:
+
+```csharp
+internal class GoodMorningDailyJob : IDailyJob
+{
+    public DailyJobDefinition Definition { get; } = new()
+    {
+        TimeOfDay = new TimeOnly(7, 40, 0),
+        Id = "Good morning"
+    };
+
+    public async Task Handle(IServiceProvider services, BotCore botCore)
+    {
+        // ...
+    }
+}
+```
+
+Preferred `v15` style:
+
+```csharp
+internal class GoodMorningDailyJob : IScheduledJob
+{
+    public ScheduledJobDefinition Definition { get; } = new()
+    {
+        Id = "Good morning",
+        Schedule = new LocalTimeDailySchedule(new TimeOnly(7, 40, 0))
+    };
+
+    public async Task Handle(IServiceProvider services, BotCore botCore, CancellationToken ct)
+    {
+        // ...
+    }
+}
+```
+
+Compatibility notes:
+
+- `IDailyJob` and `DailyJobDefinition` are available again in `v15` as obsolete compatibility APIs
+- old `DailyJobDefinition.TimeOfDay` is mapped to `LocalTimeDailySchedule`
+- old `IDailyJob.Handle(IServiceProvider, BotCore)` still works, but new code should accept `CancellationToken ct`
+- for new development, prefer `IScheduledJob` directly
+
 ## ChatMetadata
 
 `ChatMetadata` is now immutable and includes helper methods for tag updates.

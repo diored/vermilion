@@ -1,9 +1,15 @@
 namespace DioRed.Vermilion.Handling;
 
+/// <summary>
+/// Provides handler lookup and ordering for incoming commands.
+/// </summary>
 public class CommandHandlersManager(IEnumerable<ICommandHandler> commandHandlers)
 {
     private readonly List<ICommandHandler> _commandHandlers = [..commandHandlers];
 
+    /// <summary>
+    /// Returns handlers whose command definitions match the specified message context.
+    /// </summary>
     public ICommandHandler[] FindMatchedHandlers(
         string command,
         bool hasTail,

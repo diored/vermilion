@@ -22,6 +22,9 @@
     <Project Path="examples/QuickStart.Telegram.InMemory/QuickStart.Telegram.InMemory.csproj">
       <BuildType Solution="DebugEngine|*" Project="Debug" />
     </Project>
+    <Project Path="examples/QuickStart.Telegram.InMemory.Manual/QuickStart.Telegram.InMemory.Manual.csproj">
+      <BuildType Solution="DebugEngine|*" Project="Debug" />
+    </Project>
     <Project Path="examples/QuickStart.Telegram.JsonFile/QuickStart.Telegram.JsonFile.csproj">
       <BuildType Solution="DebugEngine|*" Project="Debug" />
     </Project>

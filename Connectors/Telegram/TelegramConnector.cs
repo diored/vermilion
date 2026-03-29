@@ -13,6 +13,9 @@ using Telegram.Bot.Types.Enums;
 
 namespace DioRed.Vermilion.Connectors.Telegram;
 
+/// <summary>
+/// Telegram implementation of <see cref="IConnector"/>.
+/// </summary>
 public class TelegramConnector : IConnector
 {
     private readonly static string _version = typeof(TelegramConnector).Assembly.GetName().Version.Normalize();
@@ -25,8 +28,12 @@ public class TelegramConnector : IConnector
     private readonly long[] _superAdmins;
     private readonly string _connectorKey;
 
+    /// <inheritdoc />
     public event EventHandler<MessagePostedEventArgs>? MessagePosted;
 
+    /// <summary>
+    /// Initializes a new Telegram connector.
+    /// </summary>
     public TelegramConnector(
         TelegramConnectorOptions options,
         ILoggerFactory loggerFactory
@@ -39,8 +46,10 @@ public class TelegramConnector : IConnector
         _connectorKey = options.ConnectorKey;
     }
 
+    /// <inheritdoc />
     public string Version => _version;
 
+    /// <inheritdoc />
     public async Task StartAsync(CancellationToken ct)
     {
         // Resolve bot info lazily to avoid sync-over-async deadlocks during DI construction.
@@ -97,6 +106,7 @@ public class TelegramConnector : IConnector
         );
     }
 
+    /// <inheritdoc />
     public Task StopAsync(CancellationToken ct)
     {
         _cancellationTokenSource?.Cancel();
@@ -110,6 +120,7 @@ public class TelegramConnector : IConnector
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public async Task<PostResult> PostAsync(
         long internalId,
         IContent content,
@@ -134,12 +145,16 @@ public class TelegramConnector : IConnector
         return await DoActionAsync(actionFactory, internalId, ct);
     }
 
+    /// <inheritdoc />
     public bool IsSuperAdmin(ChatId chatId)
     {
         return chatId.ConnectorKey == _connectorKey
             && _superAdmins.Contains(chatId.Id);
     }
 
+    /// <summary>
+    /// Raises <see cref="MessagePosted"/> for a received Telegram message.
+    /// </summary>
     protected virtual void OnMessagePosted(MessagePostedEventArgs e)
     {
         MessagePosted?.Invoke(this, e);

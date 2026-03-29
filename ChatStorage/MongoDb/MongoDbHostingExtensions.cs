@@ -5,12 +5,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DioRed.Vermilion.Hosting;
 
+/// <summary>
+/// Adds MongoDB chat storage registration helpers.
+/// </summary>
 public static class MongoDbHostingExtensions
 {
     private const string ConfigKeyPrefix = "Vermilion:MongoDb";
 
     extension(IChatStorageCollection chatStorageCollection)
     {
+        /// <summary>
+        /// Uses MongoDB storage configured from the application configuration.
+        /// </summary>
         public void UseMongoDb()
         {
             chatStorageCollection.Use(serviceProvider =>
@@ -32,6 +38,9 @@ public static class MongoDbHostingExtensions
             });
         }
 
+        /// <summary>
+        /// Uses MongoDB storage with the specified options.
+        /// </summary>
         public void UseMongoDb(MongoDbChatStorageOptions options)
         {
             chatStorageCollection.Use(
@@ -43,6 +52,9 @@ public static class MongoDbHostingExtensions
             );
         }
 
+        /// <summary>
+        /// Uses MongoDB storage with the specified connection string and optional configuration.
+        /// </summary>
         public void UseMongoDb(
             string connectionString,
             Action<MongoDbChatStorageOptions>? configure = null
@@ -60,4 +72,5 @@ public static class MongoDbHostingExtensions
             chatStorageCollection.UseMongoDb(options);
         }
     }
+
 }

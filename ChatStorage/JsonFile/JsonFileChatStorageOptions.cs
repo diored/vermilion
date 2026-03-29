@@ -1,5 +1,8 @@
 namespace DioRed.Vermilion.ChatStorage;
 
+/// <summary>
+/// Configures the JSON file chat storage provider.
+/// </summary>
 public class JsonFileChatStorageOptions
 {
     /// <summary>Path to the JSON file that stores chat metadata.</summary>

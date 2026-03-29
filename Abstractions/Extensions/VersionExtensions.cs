@@ -1,5 +1,8 @@
 namespace DioRed.Vermilion.Extensions;
 
+/// <summary>
+/// Version helper extensions used by Vermilion.
+/// </summary>
 public static class VersionExtensions
 {
     extension(Version? version)
@@ -7,7 +10,6 @@ public static class VersionExtensions
         /// <summary>
         /// Normalizes a Version object to a string, removing trailing ".0" segments.
         /// </summary>
-        /// <param name="version">The version to normalize.</param>
         /// <returns>A normalized version string.</returns>
         public string Normalize()
         {

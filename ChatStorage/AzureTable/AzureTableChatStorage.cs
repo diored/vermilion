@@ -9,6 +9,9 @@ using DioRed.Common.AzureStorage;
 
 namespace DioRed.Vermilion.ChatStorage;
 
+/// <summary>
+/// Persists chat metadata in Azure Table Storage.
+/// </summary>
 public class AzureTableChatStorage : IChatStorage
 {
     private const int CurrentSchemaVersion = 2;
@@ -18,6 +21,9 @@ public class AzureTableChatStorage : IChatStorage
     private readonly TableClient _tableClient;
     private readonly Lazy<Task> _ensureSchema;
 
+    /// <summary>
+    /// Creates an Azure Table chat storage instance.
+    /// </summary>
     public AzureTableChatStorage(
         AzureStorageSettings settings,
         string tableName = Defaults.TableName
@@ -30,6 +36,7 @@ public class AzureTableChatStorage : IChatStorage
 
     private Task EnsureSchemaUpToDateAsync() => _ensureSchema.Value;
 
+    /// <inheritdoc />
     public async Task AddChatAsync(
         ChatMetadata metadata,
         string? title = null,
@@ -50,6 +57,7 @@ public class AzureTableChatStorage : IChatStorage
         await _tableClient.AddEntityAsync(entity, ct);
     }
 
+    /// <inheritdoc />
     public async Task<ChatMetadata> GetChatAsync(ChatId chatId, CancellationToken ct = default)
     {
         await EnsureSchemaUpToDateAsync().ConfigureAwait(false);
@@ -64,6 +72,7 @@ public class AzureTableChatStorage : IChatStorage
         return BuildEntity(entity);
     }
 
+    /// <inheritdoc />
     public async IAsyncEnumerable<ChatMetadata> GetChatsAsync(
         [EnumeratorCancellation] CancellationToken ct = default
     )
@@ -81,6 +90,7 @@ public class AzureTableChatStorage : IChatStorage
         }
     }
 
+    /// <inheritdoc />
     public async Task RemoveChatAsync(ChatId chatId, CancellationToken ct = default)
     {
         await EnsureSchemaUpToDateAsync().ConfigureAwait(false);
@@ -115,6 +125,7 @@ public class AzureTableChatStorage : IChatStorage
         }
     }
 
+    /// <inheritdoc />
     public async Task UpdateChatAsync(ChatMetadata metadata, CancellationToken ct = default)
     {
         await EnsureSchemaUpToDateAsync().ConfigureAwait(false);

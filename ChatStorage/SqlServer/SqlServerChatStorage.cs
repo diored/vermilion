@@ -8,6 +8,9 @@ using Microsoft.Data.SqlClient;
 
 namespace DioRed.Vermilion.ChatStorage;
 
+/// <summary>
+/// Persists chat metadata in SQL Server.
+/// </summary>
 public partial class SqlServerChatStorage : IChatStorage
 {
     private const string StorageId = "SqlServerChatStorage";
@@ -18,6 +21,9 @@ public partial class SqlServerChatStorage : IChatStorage
     private readonly string _schema;
     private readonly Lazy<Task> _ensureSchema;
 
+    /// <summary>
+    /// Creates a SQL Server chat storage instance.
+    /// </summary>
     public SqlServerChatStorage(
         string connectionString,
         string tableName = Defaults.TableName,
@@ -49,6 +55,7 @@ public partial class SqlServerChatStorage : IChatStorage
         _ensureSchema = new(EnsureSchemaUpToDateCoreAsync);
     }
 
+    /// <inheritdoc />
     public async Task AddChatAsync(
         ChatMetadata metadata,
         string? title = null,
@@ -78,6 +85,7 @@ public partial class SqlServerChatStorage : IChatStorage
         )).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task<ChatMetadata> GetChatAsync(ChatId chatId, CancellationToken ct = default)
     {
         await using SqlConnection db = new(_connectionString);
@@ -109,6 +117,7 @@ public partial class SqlServerChatStorage : IChatStorage
         return BuildEntity(dto);
     }
 
+    /// <inheritdoc />
     public async IAsyncEnumerable<ChatMetadata> GetChatsAsync(
         [EnumeratorCancellation] CancellationToken ct = default
     )
@@ -132,6 +141,7 @@ public partial class SqlServerChatStorage : IChatStorage
         }
     }
 
+    /// <inheritdoc />
     public async Task RemoveChatAsync(ChatId chatId, CancellationToken ct = default)
     {
         await using SqlConnection db = new(_connectionString);
@@ -155,6 +165,7 @@ public partial class SqlServerChatStorage : IChatStorage
         )).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task UpdateChatAsync(ChatMetadata chatInfo, CancellationToken ct = default)
     {
         await using SqlConnection db = new(_connectionString);

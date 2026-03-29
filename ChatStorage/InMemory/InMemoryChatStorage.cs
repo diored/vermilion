@@ -1,9 +1,13 @@
 namespace DioRed.Vermilion.ChatStorage;
 
+/// <summary>
+/// Stores chat metadata in memory for the lifetime of the current process.
+/// </summary>
 public class InMemoryChatStorage : IChatStorage
 {
     private readonly Dictionary<ChatId, ChatMetadata> _chats = [];
 
+    /// <inheritdoc />
     public Task AddChatAsync(
         ChatMetadata metadata,
         string? title = null,
@@ -19,6 +23,7 @@ public class InMemoryChatStorage : IChatStorage
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task<ChatMetadata> GetChatAsync(ChatId chatId, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
@@ -27,6 +32,7 @@ public class InMemoryChatStorage : IChatStorage
             : throw new ChatNotFoundException(chatId);
     }
 
+    /// <inheritdoc />
     public async IAsyncEnumerable<ChatMetadata> GetChatsAsync(
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default
     )
@@ -39,6 +45,7 @@ public class InMemoryChatStorage : IChatStorage
         }
     }
 
+    /// <inheritdoc />
     public Task RemoveChatAsync(ChatId chatId, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
@@ -47,6 +54,7 @@ public class InMemoryChatStorage : IChatStorage
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task UpdateChatAsync(ChatMetadata metadata, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();

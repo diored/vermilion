@@ -5,12 +5,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DioRed.Vermilion.Hosting;
 
+/// <summary>
+/// Adds SQLite chat storage registration helpers.
+/// </summary>
 public static class SqliteHostingExtensions
 {
     private const string ConfigKeyPrefix = "Vermilion:Sqlite";
 
     extension(IChatStorageCollection chatStorageCollection)
     {
+        /// <summary>
+        /// Uses SQLite storage configured from the application configuration.
+        /// </summary>
         public void UseSqlite()
         {
             chatStorageCollection.Use(serviceProvider =>
@@ -30,6 +36,9 @@ public static class SqliteHostingExtensions
             });
         }
 
+        /// <summary>
+        /// Uses SQLite storage with the specified options.
+        /// </summary>
         public void UseSqlite(SqliteChatStorageOptions options)
         {
             chatStorageCollection.Use(
@@ -40,6 +49,9 @@ public static class SqliteHostingExtensions
             );
         }
 
+        /// <summary>
+        /// Uses SQLite storage with the specified connection string and optional configuration.
+        /// </summary>
         public void UseSqlite(
             string connectionString,
             Action<SqliteChatStorageOptions>? configure = null
@@ -56,4 +68,5 @@ public static class SqliteHostingExtensions
             chatStorageCollection.UseSqlite(options);
         }
     }
+
 }

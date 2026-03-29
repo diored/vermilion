@@ -10,3 +10,9 @@ Usage:
 ```csharp
 v.ConfigureChatStorage(s => s.UseInMemory());
 ```
+
+If you use the complete `DioRed.Vermilion` package, you can also write:
+
+```csharp
+v.UseInMemoryChatStorage();
+```

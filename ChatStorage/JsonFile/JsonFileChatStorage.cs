@@ -2,6 +2,9 @@ using System.Text.Json;
 
 namespace DioRed.Vermilion.ChatStorage;
 
+/// <summary>
+/// Persists chat metadata to a JSON file on disk.
+/// </summary>
 public sealed class JsonFileChatStorage : IChatStorage
 {
     private readonly string _filePath;
@@ -12,6 +15,9 @@ public sealed class JsonFileChatStorage : IChatStorage
     private bool _loaded;
     private readonly Dictionary<ChatId, StoredChat> _chats = new();
 
+    /// <summary>
+    /// Creates a JSON file chat storage instance.
+    /// </summary>
     public JsonFileChatStorage(string filePath, bool writeIndented = true)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath, nameof(filePath));
@@ -23,6 +29,7 @@ public sealed class JsonFileChatStorage : IChatStorage
         };
     }
 
+    /// <inheritdoc />
     public async Task AddChatAsync(
         ChatMetadata metadata,
         string? title = null,
@@ -54,6 +61,7 @@ public sealed class JsonFileChatStorage : IChatStorage
         }
     }
 
+    /// <inheritdoc />
     public async Task<ChatMetadata> GetChatAsync(ChatId chatId, CancellationToken ct = default)
     {
         await _gate.WaitAsync(ct).ConfigureAwait(false);
@@ -74,6 +82,7 @@ public sealed class JsonFileChatStorage : IChatStorage
         }
     }
 
+    /// <inheritdoc />
     public async IAsyncEnumerable<ChatMetadata> GetChatsAsync(
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default
     )
@@ -94,6 +103,7 @@ public sealed class JsonFileChatStorage : IChatStorage
         }
     }
 
+    /// <inheritdoc />
     public async Task RemoveChatAsync(ChatId chatId, CancellationToken ct = default)
     {
         await _gate.WaitAsync(ct).ConfigureAwait(false);
@@ -112,6 +122,7 @@ public sealed class JsonFileChatStorage : IChatStorage
         }
     }
 
+    /// <inheritdoc />
     public async Task UpdateChatAsync(ChatMetadata metadata, CancellationToken ct = default)
     {
         await _gate.WaitAsync(ct).ConfigureAwait(false);

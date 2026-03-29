@@ -6,12 +6,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DioRed.Vermilion.Hosting;
 
+/// <summary>
+/// Adds Azure Table chat storage registration helpers.
+/// </summary>
 public static class AzureTableHostingExtensions
 {
     private const string ConfigKeyPrefix = "Vermilion:AzureTable";
 
     extension(IChatStorageCollection chatStorageCollection)
     {
+        /// <summary>
+        /// Uses Azure Table storage configured from the application configuration.
+        /// </summary>
         public void UseAzureTable()
         {
             chatStorageCollection.Use(serviceProvider =>
@@ -32,6 +38,9 @@ public static class AzureTableHostingExtensions
             });
         }
 
+        /// <summary>
+        /// Uses Azure Table storage with the specified options.
+        /// </summary>
         public void UseAzureTable(AzureTableChatStorageOptions options)
         {
             chatStorageCollection.Use(
@@ -42,6 +51,9 @@ public static class AzureTableHostingExtensions
             );
         }
 
+        /// <summary>
+        /// Uses Azure Table storage with the specified Azure Storage settings.
+        /// </summary>
         public void UseAzureTable(
             AzureStorageSettings settings,
             Action<AzureTableChatStorageOptions>? configure = null
@@ -58,4 +70,5 @@ public static class AzureTableHostingExtensions
             chatStorageCollection.UseAzureTable(options);
         }
     }
+
 }

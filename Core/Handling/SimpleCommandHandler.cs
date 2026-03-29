@@ -3,11 +3,17 @@ using DioRed.Vermilion.Interaction;
 
 namespace DioRed.Vermilion.Handling;
 
+/// <summary>
+/// Lightweight command handler wrapper built from delegates.
+/// </summary>
 public class SimpleCommandHandler(
     CommandDefinition commandDefinition,
     Func<MessageHandlingContext, Feedback, CancellationToken, Task<bool>> handle
 ) : ICommandHandler
 {
+    /// <summary>
+    /// Initializes a handler from an asynchronous delegate that returns whether handling succeeded.
+    /// </summary>
     public SimpleCommandHandler(
         CommandDefinition commandDefinition,
         Func<MessageHandlingContext, Feedback, Task<bool>> handle
@@ -18,6 +24,9 @@ public class SimpleCommandHandler(
     {
     }
 
+    /// <summary>
+    /// Initializes a handler from an asynchronous delegate that always counts as handled on success.
+    /// </summary>
     public SimpleCommandHandler(
         CommandDefinition commandDefinition,
         Func<MessageHandlingContext, Feedback, CancellationToken, Task> handle
@@ -33,6 +42,9 @@ public class SimpleCommandHandler(
     {
     }
 
+    /// <summary>
+    /// Initializes a handler from an asynchronous delegate that always counts as handled on success.
+    /// </summary>
     public SimpleCommandHandler(
         CommandDefinition commandDefinition,
         Func<MessageHandlingContext, Feedback, Task> handle
@@ -48,8 +60,14 @@ public class SimpleCommandHandler(
     {
     }
 
+    /// <summary>
+    /// Gets the command definition for this handler.
+    /// </summary>
     public CommandDefinition Definition => commandDefinition;
 
+    /// <summary>
+    /// Executes the wrapped delegate.
+    /// </summary>
     public async Task<bool> HandleAsync(
         MessageHandlingContext context,
         Feedback send,

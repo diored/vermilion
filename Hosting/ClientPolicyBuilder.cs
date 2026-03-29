@@ -1,10 +1,17 @@
 using Rule = System.Func<DioRed.Vermilion.ChatId, bool>;
 
 namespace DioRed.Vermilion.Hosting;
+
+/// <summary>
+/// Builds a <see cref="ClientsPolicy"/> by composing allow and deny rules.
+/// </summary>
 public class ClientPolicyBuilder
 {
     private Rule? _policy;
 
+    /// <summary>
+    /// Allows messages to be sent to every chat.
+    /// </summary>
     public ClientPolicyBuilder AllowForEveryone()
     {
         AddRule(chatId => true);
@@ -12,6 +19,9 @@ public class ClientPolicyBuilder
         return this;
     }
 
+    /// <summary>
+    /// Allows messages to be sent only to the specified chats.
+    /// </summary>
     public ClientPolicyBuilder AllowFor(params IEnumerable<ChatId> chatIds)
     {
         HashSet<ChatId> chatIdSet = [.. chatIds];
@@ -21,6 +31,9 @@ public class ClientPolicyBuilder
         return this;
     }
 
+    /// <summary>
+    /// Allows messages to be sent only to chats that satisfy the specified condition.
+    /// </summary>
     public ClientPolicyBuilder AllowFor(Rule condition)
     {
         ArgumentNullException.ThrowIfNull(condition);
@@ -30,6 +43,9 @@ public class ClientPolicyBuilder
         return this;
     }
 
+    /// <summary>
+    /// Denies messages for every chat.
+    /// </summary>
     public ClientPolicyBuilder DenyForEveryone()
     {
         AddRule(chatId => false);
@@ -37,6 +53,9 @@ public class ClientPolicyBuilder
         return this;
     }
 
+    /// <summary>
+    /// Denies messages for the specified chats.
+    /// </summary>
     public ClientPolicyBuilder DenyFor(params IEnumerable<ChatId> chatIds)
     {
         HashSet<ChatId> chatIdSet = [.. chatIds];
@@ -46,6 +65,9 @@ public class ClientPolicyBuilder
         return this;
     }
 
+    /// <summary>
+    /// Denies messages for chats that satisfy the specified condition.
+    /// </summary>
     public ClientPolicyBuilder DenyFor(Rule condition)
     {
         ArgumentNullException.ThrowIfNull(condition);
@@ -55,6 +77,9 @@ public class ClientPolicyBuilder
         return this;
     }
 
+    /// <summary>
+    /// Builds the resulting clients policy.
+    /// </summary>
     public ClientsPolicy Build()
     {
         return _policy is not null

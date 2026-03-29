@@ -37,6 +37,12 @@ Multiple accounts:
 v.ConfigureConnectors(c => c.AddTelegram());
 ```
 
+If you use the complete `DioRed.Vermilion` package, you can also write:
+
+```csharp
+v.UseTelegram();
+```
+
 Or explicit token:
 
 ```csharp

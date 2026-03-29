@@ -14,6 +14,16 @@ builder.AddVermilion("MyBot", v =>
 });
 ```
 
+If you use the complete `DioRed.Vermilion` package, the same setup can be written as:
+
+```csharp
+builder.AddVermilion("MyBot", v =>
+{
+    v.UseJsonFileChatStorage("./vermilion-chats.json");
+    v.UseTelegram();
+});
+```
+
 ## Configuration
 
 ```json

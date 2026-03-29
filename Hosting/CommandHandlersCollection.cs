@@ -6,10 +6,17 @@ using DioRed.Vermilion.Handling.Context;
 using DioRed.Vermilion.Messages;
 
 namespace DioRed.Vermilion.Hosting;
+
+/// <summary>
+/// Builder-style collection used to register command handlers for Vermilion.
+/// </summary>
 public class CommandHandlersCollection(IServiceProvider services)
 {
     internal List<ICommandHandler> CommandHandlers { get; } = [];
 
+    /// <summary>
+    /// Registers a command that requires a tail and returns a synchronous text response.
+    /// </summary>
     public CommandHandlersCollection Add(
         string command,
         Func<string, string> replyFunc,
@@ -29,6 +36,9 @@ public class CommandHandlersCollection(IServiceProvider services)
         );
     }
 
+    /// <summary>
+    /// Registers a command that returns a synchronous text response based on the full handling context.
+    /// </summary>
     public CommandHandlersCollection Add(
         string command,
         Func<MessageHandlingContext, string> replyFunc,
@@ -49,6 +59,9 @@ public class CommandHandlersCollection(IServiceProvider services)
         );
     }
 
+    /// <summary>
+    /// Registers a command that requires a tail and returns an asynchronous text response.
+    /// </summary>
     public CommandHandlersCollection Add(
         string command,
         Func<string, CancellationToken, Task<string>> replyFunc,
@@ -71,6 +84,9 @@ public class CommandHandlersCollection(IServiceProvider services)
         );
     }
 
+    /// <summary>
+    /// Registers a command that returns an asynchronous text response based on the full handling context.
+    /// </summary>
     public CommandHandlersCollection Add(
         string command,
         Func<MessageHandlingContext, CancellationToken, Task<string>> replyFunc,
@@ -94,6 +110,9 @@ public class CommandHandlersCollection(IServiceProvider services)
         );
     }
 
+    /// <summary>
+    /// Registers a command without a tail that returns a synchronous text response.
+    /// </summary>
     public CommandHandlersCollection Add(
         string command,
         Func<string> replyFunc,
@@ -113,6 +132,9 @@ public class CommandHandlersCollection(IServiceProvider services)
         );
     }
 
+    /// <summary>
+    /// Registers a command without a tail that returns an asynchronous text response.
+    /// </summary>
     public CommandHandlersCollection Add(
         string command,
         Func<CancellationToken, Task<string>> replyFunc,
@@ -135,6 +157,9 @@ public class CommandHandlersCollection(IServiceProvider services)
         );
     }
 
+    /// <summary>
+    /// Adds an already constructed command handler instance.
+    /// </summary>
     public CommandHandlersCollection Add(ICommandHandler commandHandler)
     {
         CommandHandlers.Add(commandHandler);
@@ -142,6 +167,9 @@ public class CommandHandlersCollection(IServiceProvider services)
         return this;
     }
 
+    /// <summary>
+    /// Resolves and adds a command handler by type from the service provider.
+    /// </summary>
     public CommandHandlersCollection Add(Type type)
     {
         if (!typeof(ICommandHandler).IsAssignableFrom(type))
@@ -159,17 +187,26 @@ public class CommandHandlersCollection(IServiceProvider services)
         return Add((ICommandHandler)TypeResolver.Resolve(services, type));
     }
 
+    /// <summary>
+    /// Resolves and adds a command handler by generic type from the service provider.
+    /// </summary>
     public CommandHandlersCollection Add<T>()
         where T : ICommandHandler
     {
         return Add(TypeResolver.Resolve<T>(services));
     }
 
+    /// <summary>
+    /// Loads all command handlers from the entry assembly.
+    /// </summary>
     public CommandHandlersCollection LoadFromEntryAssembly()
     {
         return LoadFromAssembly(Assembly.GetEntryAssembly()!);
     }
 
+    /// <summary>
+    /// Loads all command handlers discovered in the specified assembly.
+    /// </summary>
     public CommandHandlersCollection LoadFromAssembly(Assembly assembly)
     {
         TypeInfo[] commandHandlers =
@@ -189,6 +226,9 @@ public class CommandHandlersCollection(IServiceProvider services)
         return this;
     }
 
+    /// <summary>
+    /// Loads all command handlers discovered in the specified assemblies.
+    /// </summary>
     public CommandHandlersCollection LoadFromAssemblies(IEnumerable<Assembly> assemblies)
     {
         foreach (Assembly assembly in assemblies)

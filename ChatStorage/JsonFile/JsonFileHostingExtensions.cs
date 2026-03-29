@@ -5,12 +5,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DioRed.Vermilion.Hosting;
 
+/// <summary>
+/// Adds JSON file chat storage registration helpers.
+/// </summary>
 public static class JsonFileHostingExtensions
 {
     private const string ConfigKeyPrefix = "Vermilion:JsonFile";
 
     extension(IChatStorageCollection chatStorageCollection)
     {
+        /// <summary>
+        /// Uses JSON file storage configured from the application configuration.
+        /// </summary>
         public void UseJsonFile()
         {
             chatStorageCollection.Use(serviceProvider =>
@@ -30,6 +36,9 @@ public static class JsonFileHostingExtensions
             });
         }
 
+        /// <summary>
+        /// Uses JSON file storage with the specified options.
+        /// </summary>
         public void UseJsonFile(JsonFileChatStorageOptions options)
         {
             chatStorageCollection.Use(
@@ -37,6 +46,9 @@ public static class JsonFileHostingExtensions
             );
         }
 
+        /// <summary>
+        /// Uses JSON file storage with the specified file path and optional configuration.
+        /// </summary>
         public void UseJsonFile(
             string filePath,
             Action<JsonFileChatStorageOptions>? configure = null
@@ -53,4 +65,5 @@ public static class JsonFileHostingExtensions
             chatStorageCollection.UseJsonFile(options);
         }
     }
+
 }

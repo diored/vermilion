@@ -24,6 +24,12 @@ The package applies idempotent schema migrations automatically on startup. Upgra
 v.ConfigureChatStorage(s => s.UseSqlServer());
 ```
 
+If you use the complete `DioRed.Vermilion` package, you can also write:
+
+```csharp
+v.UseSqlServerChatStorage();
+```
+
 Or explicit connection string:
 
 ```csharp

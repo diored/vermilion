@@ -12,6 +12,7 @@
   </Folder>
   <Folder Name="/examples/">
     <Project Path="examples/QuickStart.Telegram.InMemory/QuickStart.Telegram.InMemory.ProjectRefs.csproj" />
+    <Project Path="examples/QuickStart.Telegram.InMemory.Manual/QuickStart.Telegram.InMemory.Manual.ProjectRefs.csproj" />
     <Project Path="examples/QuickStart.Telegram.JsonFile/QuickStart.Telegram.JsonFile.ProjectRefs.csproj" />
     <Project Path="examples/QuickStart.Telegram.MongoDb/QuickStart.Telegram.MongoDb.ProjectRefs.csproj" />
     <Project Path="examples/QuickStart.Telegram.Sqlite/QuickStart.Telegram.Sqlite.ProjectRefs.csproj" />

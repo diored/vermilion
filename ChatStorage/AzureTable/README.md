@@ -23,6 +23,12 @@ The package applies idempotent storage migrations automatically on startup. Upgr
 v.ConfigureChatStorage(s => s.UseAzureTable());
 ```
 
+If you use the complete `DioRed.Vermilion` package, you can also write:
+
+```csharp
+v.UseAzureTableChatStorage();
+```
+
 Or explicit settings:
 
 ```csharp

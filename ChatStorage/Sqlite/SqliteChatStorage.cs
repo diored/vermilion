@@ -5,6 +5,9 @@ using System.Runtime.CompilerServices;
 
 namespace DioRed.Vermilion.ChatStorage;
 
+/// <summary>
+/// Persists chat metadata in a SQLite database.
+/// </summary>
 public class SqliteChatStorage : IChatStorage
 {
     private const string StorageId = "SqliteChatStorage";
@@ -14,6 +17,9 @@ public class SqliteChatStorage : IChatStorage
     private readonly string _tableName;
     private readonly Lazy<Task> _ensureSchema;
 
+    /// <summary>
+    /// Creates a SQLite chat storage instance.
+    /// </summary>
     public SqliteChatStorage(
         string connectionString,
         string tableName = Defaults.TableName
@@ -27,6 +33,7 @@ public class SqliteChatStorage : IChatStorage
         _ensureSchema = new(EnsureSchemaUpToDateCoreAsync);
     }
 
+    /// <inheritdoc />
     public async Task AddChatAsync(
         ChatMetadata metadata,
         string? title = null,
@@ -61,6 +68,7 @@ public class SqliteChatStorage : IChatStorage
         }
     }
 
+    /// <inheritdoc />
     public async Task<ChatMetadata> GetChatAsync(ChatId chatId, CancellationToken ct = default)
     {
         await EnsureSchemaUpToDateAsync().ConfigureAwait(false);
@@ -90,6 +98,7 @@ public class SqliteChatStorage : IChatStorage
         return BuildEntity(reader);
     }
 
+    /// <inheritdoc />
     public async IAsyncEnumerable<ChatMetadata> GetChatsAsync(
         [EnumeratorCancellation] CancellationToken ct = default
     )
@@ -113,6 +122,7 @@ public class SqliteChatStorage : IChatStorage
         }
     }
 
+    /// <inheritdoc />
     public async Task RemoveChatAsync(ChatId chatId, CancellationToken ct = default)
     {
         await EnsureSchemaUpToDateAsync().ConfigureAwait(false);
@@ -134,6 +144,7 @@ public class SqliteChatStorage : IChatStorage
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task UpdateChatAsync(ChatMetadata metadata, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(metadata);

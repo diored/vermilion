@@ -9,9 +9,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
 
 namespace DioRed.Vermilion.Hosting;
 
+/// <summary>
+/// Builds a configured <see cref="BotCore"/> instance from connectors, handlers, storage, and jobs.
+/// </summary>
 public class BotCoreBuilder
 {
     private readonly Dictionary<string, IConnector> _connectors = [];
@@ -31,8 +35,14 @@ public class BotCoreBuilder
         _botCoreLogger = Services.GetRequiredService<ILoggerFactory>().CreateLogger<BotCore>();
     }
 
+    /// <summary>
+    /// Gets the service provider used to resolve framework and application services during setup.
+    /// </summary>
     public IServiceProvider Services { get; }
 
+    /// <summary>
+    /// Replaces the command handler set with the specified handlers.
+    /// </summary>
     public BotCoreBuilder ConfigureCommandHandlers(
         IEnumerable<ICommandHandler> commandHandlers
     )
@@ -69,6 +79,9 @@ public class BotCoreBuilder
         return this;
     }
 
+    /// <summary>
+    /// Configures command handlers using a mutable registration collection.
+    /// </summary>
     public BotCoreBuilder ConfigureCommandHandlers(
         Action<CommandHandlersCollection> configure
     )
@@ -81,6 +94,21 @@ public class BotCoreBuilder
         return ConfigureCommandHandlers(collection.CommandHandlers);
     }
 
+    /// <summary>
+    /// Loads command handlers from the entry assembly.
+    /// </summary>
+    public BotCoreBuilder LoadCommandHandlersFromEntryAssembly()
+        => ConfigureCommandHandlers(c => c.LoadFromEntryAssembly());
+
+    /// <summary>
+    /// Loads command handlers from the specified assembly.
+    /// </summary>
+    public BotCoreBuilder LoadCommandHandlersFromAssembly(Assembly assembly)
+        => ConfigureCommandHandlers(c => c.LoadFromAssembly(assembly));
+
+    /// <summary>
+    /// Configures bot connectors using a mutable registration collection.
+    /// </summary>
     public BotCoreBuilder ConfigureConnectors(Action<ConnectorsCollection> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -111,6 +139,9 @@ public class BotCoreBuilder
         return this;
     }
 
+    /// <summary>
+    /// Configures scheduled jobs using a mutable registration collection.
+    /// </summary>
     public BotCoreBuilder ConfigureScheduledJobs(Action<ScheduledJobsCollection> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -131,6 +162,28 @@ public class BotCoreBuilder
         return this;
     }
 
+    /// <summary>
+    /// Legacy alias preserved for migration from older Vermilion versions.
+    /// </summary>
+    [Obsolete("Use ConfigureScheduledJobs instead.")]
+    public BotCoreBuilder ConfigureDailyJobs(Action<ScheduledJobsCollection> configure)
+        => ConfigureScheduledJobs(configure);
+
+    /// <summary>
+    /// Loads scheduled jobs from the entry assembly.
+    /// </summary>
+    public BotCoreBuilder LoadScheduledJobsFromEntryAssembly()
+        => ConfigureScheduledJobs(c => c.LoadFromEntryAssembly());
+
+    /// <summary>
+    /// Loads scheduled jobs from the specified assembly.
+    /// </summary>
+    public BotCoreBuilder LoadScheduledJobsFromAssembly(Assembly assembly)
+        => ConfigureScheduledJobs(c => c.LoadFromAssembly(assembly));
+
+    /// <summary>
+    /// Configures the chat storage used by the bot.
+    /// </summary>
     public BotCoreBuilder ConfigureChatStorage(Action<ChatStorageCollection> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -158,6 +211,15 @@ public class BotCoreBuilder
         return this;
     }
 
+    /// <summary>
+    /// Uses the specified chat storage configuration.
+    /// </summary>
+    public BotCoreBuilder UseChatStorage(Action<ChatStorageCollection> configure)
+        => ConfigureChatStorage(configure);
+
+    /// <summary>
+    /// Configures the outgoing clients policy used by the bot.
+    /// </summary>
     public BotCoreBuilder ConfigureClientsPolicy(Action<ClientPolicyBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -170,6 +232,27 @@ public class BotCoreBuilder
         return this;
     }
 
+    /// <summary>
+    /// Allows outgoing messages only for the specified chats.
+    /// </summary>
+    public BotCoreBuilder AllowFor(params IEnumerable<ChatId> chatIds)
+        => ConfigureClientsPolicy(c => c.AllowFor(chatIds));
+
+    /// <summary>
+    /// Allows outgoing messages only for chats that satisfy the specified condition.
+    /// </summary>
+    public BotCoreBuilder AllowFor(Func<ChatId, bool> condition)
+        => ConfigureClientsPolicy(c => c.AllowFor(condition));
+
+    /// <summary>
+    /// Allows outgoing messages for every chat.
+    /// </summary>
+    public BotCoreBuilder AllowForEveryone()
+        => ConfigureClientsPolicy(c => c.AllowForEveryone());
+
+    /// <summary>
+    /// Configures bot options using a delegate.
+    /// </summary>
     public BotCoreBuilder ConfigureOptions(Action<BotOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -182,6 +265,9 @@ public class BotCoreBuilder
         return this;
     }
 
+    /// <summary>
+    /// Replaces bot options with the specified instance.
+    /// </summary>
     public BotCoreBuilder ConfigureOptions(BotOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -191,6 +277,9 @@ public class BotCoreBuilder
         return this;
     }
 
+    /// <summary>
+    /// Builds the configured <see cref="BotCore"/> instance.
+    /// </summary>
     public BotCore Build()
     {
         if (_chatStorage is null)

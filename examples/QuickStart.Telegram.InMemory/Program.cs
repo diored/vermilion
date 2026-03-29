@@ -8,7 +8,7 @@ Host.CreateDefaultBuilder(args)
         v.ConfigureChatStorage(s => s.UseInMemory());
         v.ConfigureConnectors(c => c.AddTelegram());
 
-        // Minimal handler so the bot can start.
+        // Minimal handlers so the bot can start.
         v.ConfigureCommandHandlers(h =>
         {
             h.Add("/ping", () => "pong");

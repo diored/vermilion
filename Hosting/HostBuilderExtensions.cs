@@ -4,6 +4,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace DioRed.Vermilion.Hosting;
+
+/// <summary>
+/// Adds Vermilion integration helpers to <see cref="IHostBuilder"/>.
+/// </summary>
 public static class HostBuilderExtensions
 {
     /// <summary>
@@ -53,6 +57,9 @@ public static class HostBuilderExtensions
             });
     }
 
+    /// <summary>
+    /// Registers Vermilion directly through <see cref="BotCoreBuilder"/> configuration.
+    /// </summary>
     public static IHostBuilder ConfigureVermilion(
         this IHostBuilder hostBuilder,
         string botName,

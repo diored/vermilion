@@ -7,8 +7,14 @@ using Microsoft.Extensions.Logging;
 
 namespace DioRed.Vermilion.Extensions;
 
+/// <summary>
+/// Service provider helpers for scheduling recurring jobs with Vermilion.
+/// </summary>
 public static class ServiceProviderExtensions
 {
+    /// <summary>
+    /// Schedules a daily job that can access the current <see cref="BotCore"/>.
+    /// </summary>
     public static IServiceProvider SetupDailyJob(
         this IServiceProvider services,
         Func<IServiceProvider, BotCore, CancellationToken, Task> action,

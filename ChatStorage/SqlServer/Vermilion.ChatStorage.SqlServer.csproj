@@ -6,13 +6,14 @@
     <RootNamespace>DioRed.Vermilion.ChatStorage</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
     <PackageId>DioRed.Vermilion.ChatStorage.SqlServer</PackageId>
-    <Version>15.0.0-preview.3</Version>
+    <Version>15.0.0-preview.6</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -33,7 +34,7 @@
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.72" />
     <PackageReference Include="DioRed.Common.ConfigurationExtensions" Version="0.4.0" />
-    <PackageReference Include="DioRed.Vermilion.Abstractions" Version="15.0.0-preview.3" />
+    <PackageReference Include="DioRed.Vermilion.Abstractions" Version="15.0.0-preview.6" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
   </ItemGroup>
 

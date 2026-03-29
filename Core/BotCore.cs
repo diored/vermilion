@@ -15,6 +15,9 @@ using System.Collections.Immutable;
 
 namespace DioRed.Vermilion;
 
+/// <summary>
+/// Main Vermilion runtime that connects storage, connectors, and command handlers.
+/// </summary>
 public class BotCore : IHostedService
 {
     private readonly Lock _sync = new();
@@ -30,6 +33,9 @@ public class BotCore : IHostedService
     private Task? _messagePumpTask;
     private CancellationTokenSource? _messagePumpCancellationTokenSource;
 
+    /// <summary>
+    /// Initializes a new bot runtime instance.
+    /// </summary>
     public BotCore(
         BotCoreSettings settings,
         ILogger<BotCore> logger
@@ -101,10 +107,19 @@ public class BotCore : IHostedService
         }
     }
 
+    /// <summary>
+    /// Gets the current Vermilion core version.
+    /// </summary>
     public static string Version { get; } = typeof(BotCore).Assembly.GetName().Version.Normalize();
 
+    /// <summary>
+    /// Gets the current lifecycle state of the bot.
+    /// </summary>
     public BotCoreState State { get; private set; } = BotCoreState.NotInitialized;
 
+    /// <summary>
+    /// Starts the bot runtime and all configured connectors.
+    /// </summary>
     public async Task StartAsync(CancellationToken ct = default)
     {
         bool needsInitialization = false;
@@ -222,6 +237,33 @@ public class BotCore : IHostedService
             : BotCoreState.Stopped;
     }
 
+    /// <summary>
+    /// Starts the bot, keeps it running until cancellation is requested, and then stops it gracefully.
+    /// </summary>
+    public async Task RunAsync(CancellationToken ct = default)
+    {
+        await StartAsync(ct).ConfigureAwait(false);
+
+        try
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Normal shutdown path for manual execution.
+        }
+        finally
+        {
+            if (State is BotCoreState.Started)
+            {
+                await StopAsync(CancellationToken.None).ConfigureAwait(false);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Stops the bot runtime and all configured connectors.
+    /// </summary>
     public async Task StopAsync(CancellationToken ct = default)
     {
         lock (_sync)
@@ -291,6 +333,9 @@ public class BotCore : IHostedService
             : BotCoreState.Stopped;
     }
 
+    /// <summary>
+    /// Sends text to the specified receiver.
+    /// </summary>
     public Task PostAsync(Receiver receiver, string text, CancellationToken ct = default)
     {
         return PostAsync(
@@ -303,6 +348,9 @@ public class BotCore : IHostedService
         );
     }
 
+    /// <summary>
+    /// Sends prebuilt content to the specified receiver.
+    /// </summary>
     public Task PostAsync(Receiver receiver, IContent content, CancellationToken ct = default)
     {
         return PostAsync(
@@ -312,6 +360,9 @@ public class BotCore : IHostedService
         );
     }
 
+    /// <summary>
+    /// Builds text per chat and sends it to the specified receiver.
+    /// </summary>
     public Task PostAsync(Receiver receiver, Func<ChatMetadata, string> textBuilder, CancellationToken ct = default)
     {
         return PostAsync(
@@ -324,6 +375,9 @@ public class BotCore : IHostedService
         );
     }
 
+    /// <summary>
+    /// Builds content per chat and sends it to the specified receiver.
+    /// </summary>
     public Task PostAsync(Receiver receiver, Func<ChatMetadata, IContent> contentBuilder, CancellationToken ct = default)
     {
         return PostAsync(
@@ -335,6 +389,9 @@ public class BotCore : IHostedService
         );
     }
 
+    /// <summary>
+    /// Builds content asynchronously per chat and sends it to the specified receiver.
+    /// </summary>
     public async Task PostAsync(
         Receiver receiver,
         Func<ChatMetadata, Task<IContent>> contentBuilder,

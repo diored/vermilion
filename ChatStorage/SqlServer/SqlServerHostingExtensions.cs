@@ -5,12 +5,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DioRed.Vermilion.Hosting;
 
+/// <summary>
+/// Adds SQL Server chat storage registration helpers.
+/// </summary>
 public static class SqlServerHostingExtensions
 {
     private const string ConfigKeyPrefix = "Vermilion:SqlServer";
 
     extension(IChatStorageCollection chatStorageCollection)
     {
+        /// <summary>
+        /// Uses SQL Server storage configured from the application configuration.
+        /// </summary>
         public void UseSqlServer()
         {
             chatStorageCollection.Use(serviceProvider =>
@@ -32,6 +38,9 @@ public static class SqlServerHostingExtensions
             });
         }
 
+        /// <summary>
+        /// Uses SQL Server storage with the specified options.
+        /// </summary>
         public void UseSqlServer(SqlServerChatStorageOptions options)
         {
             chatStorageCollection.Use(
@@ -43,6 +52,9 @@ public static class SqlServerHostingExtensions
             );
         }
 
+        /// <summary>
+        /// Uses SQL Server storage with the specified connection string and optional configuration.
+        /// </summary>
         public void UseSqlServer(
             string connectionString,
             Action<SqlServerChatStorageOptions>? configure = null
@@ -60,4 +72,5 @@ public static class SqlServerHostingExtensions
             chatStorageCollection.UseSqlServer(options);
         }
     }
+
 }

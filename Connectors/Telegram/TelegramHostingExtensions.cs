@@ -8,12 +8,18 @@ using Microsoft.Extensions.Logging;
 
 namespace DioRed.Vermilion.Hosting;
 
+/// <summary>
+/// Hosting extensions for registering the Telegram connector.
+/// </summary>
 public static class TelegramHostingExtensions
 {
     private const string ConfigKeyPrefix = "Vermilion:Telegram";
 
     extension(IConnectorsCollection connectors)
     {
+        /// <summary>
+        /// Adds Telegram connectors using configuration from the host configuration tree.
+        /// </summary>
         public IConnectorsCollection AddTelegram()
         {
             return connectors.Add(serviceProvider =>
@@ -61,6 +67,9 @@ public static class TelegramHostingExtensions
             });
         }
 
+        /// <summary>
+        /// Adds a Telegram connector using the specified options instance.
+        /// </summary>
         public IConnectorsCollection AddTelegram(TelegramConnectorOptions options)
         {
             return connectors.Add(serviceProvider =>
@@ -74,6 +83,9 @@ public static class TelegramHostingExtensions
             });
         }
 
+        /// <summary>
+        /// Adds a Telegram connector using the specified bot token and optional configurator.
+        /// </summary>
         public IConnectorsCollection AddTelegram(
             string botToken,
             Action<TelegramConnectorOptions>? configure = null
