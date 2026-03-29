@@ -4,12 +4,16 @@ repo_url: https://github.com/diored/vermilion
 repo_name: diored/vermilion
 theme:
   name: material
+  palette:
+    primary: custom
   features:
     - navigation.sections
     - navigation.expand
     - navigation.top
     - search.suggest
     - search.highlight
+extra_css:
+  - stylesheets/extra.css
 markdown_extensions:
   - admonition
   - codehilite
