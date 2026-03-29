@@ -83,6 +83,22 @@ public class Feedback(
     }
 
     public Task ContentAsync(
+        IContent content,
+        CancellationToken overrideCt = default
+    )
+    {
+        return botCore.PostAsync(receiver, content, ResolveCt(overrideCt));
+    }
+
+    public Task ContentAsync(
+        Func<ChatMetadata, IContent> contentBuilder,
+        CancellationToken overrideCt = default
+    )
+    {
+        return botCore.PostAsync(receiver, contentBuilder, ResolveCt(overrideCt));
+    }
+
+    public Task ContentAsync(
         Func<ChatMetadata, Task<IContent>> contentBuilder,
         CancellationToken overrideCt = default
     )
@@ -110,7 +126,12 @@ public class Feedback(
     }
 
     public Feedback To(ChatId chatId) => new(botCore, Receiver.Chat(chatId), ct);
+    public Feedback ToWhere(Func<ChatMetadata, bool> filter) => new(botCore, Receiver.Where(filter), ct);
     public Feedback To(Func<ChatMetadata, bool> filter) => new(botCore, Receiver.Broadcast(filter), ct);
+    public Feedback ToWithTag(string tag) => new(botCore, Receiver.WithTag(tag), ct);
+    public Feedback ToWithoutTag(string tag) => new(botCore, Receiver.WithoutTag(tag), ct);
+    public Feedback ToWithAllTags(params string[] tags) => new(botCore, Receiver.WithAllTags(tags), ct);
+    public Feedback ToWithAnyTag(params string[] tags) => new(botCore, Receiver.WithAnyTag(tags), ct);
     public Feedback ToEveryone() => new(botCore, Receiver.Everyone, ct);
 
     private CancellationToken ResolveCt(CancellationToken overrideCt)

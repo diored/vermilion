@@ -1,6 +1,7 @@
 using System.Reflection;
 
 using DioRed.Vermilion.Handling;
+using DioRed.Vermilion.Handling.Context;
 
 using DioRed.Vermilion.Messages;
 
@@ -30,6 +31,26 @@ public class CommandHandlersCollection(IServiceProvider services)
 
     public CommandHandlersCollection Add(
         string command,
+        Func<MessageHandlingContext, string> replyFunc,
+        TailPolicy tailPolicy = TailPolicy.Any,
+        UserRole requiredRole = UserRole.Member
+    )
+    {
+        return Add(
+            new SimpleCommandHandler(
+                new CommandDefinition
+                {
+                    Template = command,
+                    TailPolicy = tailPolicy,
+                    RequiredRole = requiredRole
+                },
+                (context, send, ct) => send.TextAsync(replyFunc(context), ct)
+            )
+        );
+    }
+
+    public CommandHandlersCollection Add(
+        string command,
         Func<string, CancellationToken, Task<string>> replyFunc,
         UserRole requiredRole = UserRole.Member
     )
@@ -44,6 +65,29 @@ public class CommandHandlersCollection(IServiceProvider services)
                 },
                 async (context, send, ct) => await send.TextAsync(
                     await replyFunc(context.Message.Tail, ct),
+                    ct
+                )
+            )
+        );
+    }
+
+    public CommandHandlersCollection Add(
+        string command,
+        Func<MessageHandlingContext, CancellationToken, Task<string>> replyFunc,
+        TailPolicy tailPolicy = TailPolicy.Any,
+        UserRole requiredRole = UserRole.Member
+    )
+    {
+        return Add(
+            new SimpleCommandHandler(
+                new CommandDefinition
+                {
+                    Template = command,
+                    TailPolicy = tailPolicy,
+                    RequiredRole = requiredRole
+                },
+                async (context, send, ct) => await send.TextAsync(
+                    await replyFunc(context, ct),
                     ct
                 )
             )

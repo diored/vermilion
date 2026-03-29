@@ -13,4 +13,9 @@ public class ChatContext
     public ChatId Id => Client.Metadata.ChatId;
     public IImmutableSet<string> Tags => Client.Metadata.Tags;
     public Dictionary<string, object?> RuntimeValues => Client.RuntimeValues;
+
+    public bool HasTag(string tag)
+    {
+        return Client.Metadata.HasTag(tag);
+    }
 }

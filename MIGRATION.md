@@ -142,7 +142,7 @@ public async Task<bool> HandleAsync(
 
 ## ChatMetadata
 
-`ChatMetadata` is now immutable.
+`ChatMetadata` is now immutable and includes helper methods for tag updates.
 
 Old pattern:
 
@@ -151,15 +151,29 @@ chatClient.Metadata.Tags.Add("vip");
 await storage.UpdateChatAsync(chatClient.Metadata);
 ```
 
-New pattern:
+Recommended `v15` pattern:
 
 ```csharp
-ChatMetadata updated = chatClient.Metadata with
-{
-    Tags = chatClient.Metadata.Tags.Add("vip")
-};
+ChatMetadata updated = chatClient.Metadata.WithTag("vip");
 
 await storage.UpdateChatAsync(updated, ct);
+```
+
+Bulk updates:
+
+```csharp
+ChatMetadata updated = chatClient.Metadata
+    .WithTags(["vip", "beta"])
+    .WithoutTag("new-user");
+```
+
+Checking tags:
+
+```csharp
+if (chatClient.Metadata.HasTag("vip"))
+{
+    // ...
+}
 ```
 
 Notes:
@@ -233,6 +247,6 @@ Before publishing or shipping your upgrade:
 2. Update all custom `IConnector` implementations.
 3. Update all custom `ICommandHandler` implementations.
 4. Replace `GetChatsAsync()` array assumptions with async streaming.
-5. Replace in-place `ChatMetadata.Tags` mutation with `with`-based updates.
+5. Replace in-place `ChatMetadata.Tags` mutation with `WithTag(...)`, `WithoutTag(...)`, `WithTags(...)`, or `WithoutTags(...)`.
 6. Update exception handling to use typed Vermilion exceptions.
 7. Run your unit and integration tests against the `ProjectRefs` solution first.

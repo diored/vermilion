@@ -370,10 +370,7 @@ public class BotCore : IHostedService
                 continue;
             }
 
-            ChatMetadata updatedMetadata = chatClient.Metadata with
-            {
-                Tags = chatClient.Metadata.Tags.Add(tag)
-            };
+            ChatMetadata updatedMetadata = chatClient.Metadata.WithTag(tag);
 
             await _chatStorage.UpdateChatAsync(updatedMetadata, ct);
             _chatClientsManager.Set(updatedMetadata.ChatId, new ChatClient
@@ -395,10 +392,7 @@ public class BotCore : IHostedService
                 continue;
             }
 
-            ChatMetadata updatedMetadata = chatClient.Metadata with
-            {
-                Tags = chatClient.Metadata.Tags.Remove(tag)
-            };
+            ChatMetadata updatedMetadata = chatClient.Metadata.WithoutTag(tag);
 
             await _chatStorage.UpdateChatAsync(updatedMetadata, ct);
             _chatClientsManager.Set(updatedMetadata.ChatId, new ChatClient
