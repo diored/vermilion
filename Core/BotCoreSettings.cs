@@ -35,7 +35,16 @@ public class BotCoreSettings
     public BotOptions Options { get; init; } = new();
 
     /// <summary>
-    /// Gets or sets the policy that determines which chats are eligible for command handling.
+    /// Gets or sets the visibility rule that determines which chats may interact with the bot.
     /// </summary>
-    public ClientsPolicy ClientsPolicy { get; init; } = ClientsPolicy.All;
+    public BotVisibility Visibility { get; init; } = BotVisibility.Public;
+
+    /// <summary>
+    /// Legacy alias preserved for migration from older Vermilion versions.
+    /// </summary>
+    [Obsolete("Use Visibility instead.")]
+    public ClientsPolicy? ClientsPolicy
+    {
+        init => Visibility = value ?? BotVisibility.Public;
+    }
 }

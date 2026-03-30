@@ -1,14 +1,25 @@
 namespace DioRed.Vermilion;
 
 /// <summary>
-/// Determines which chats are eligible for command handling.
+/// Legacy visibility API preserved for migration from older Vermilion versions.
 /// </summary>
-public class ClientsPolicy(Func<ChatId, bool> isAllowed)
+[Obsolete("Use BotVisibility instead.")]
+public class ClientsPolicy : BotVisibility
 {
+    private readonly Func<ChatId, bool> _isAllowed;
+
+    /// <summary>
+    /// Initializes a legacy clients policy wrapper.
+    /// </summary>
+    public ClientsPolicy(Func<ChatId, bool> isAllowed) : base(isAllowed)
+    {
+        _isAllowed = isAllowed;
+    }
+
     /// <summary>
     /// Evaluates whether the specified chat is eligible.
     /// </summary>
-    public bool IsEligible(ChatId chatId) => isAllowed(chatId);
+    public bool IsEligible(ChatId chatId) => _isAllowed(chatId);
 
     /// <summary>
     /// Gets a policy that allows every chat.

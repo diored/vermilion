@@ -86,7 +86,7 @@ If you need more framework features, this is also the path where you typically a
 
 ```csharp
 v.ConfigureScheduledJobs(j => j.LoadFromEntryAssembly());
-v.ConfigureClientsPolicy(p => p.AllowForEveryone());
+v.Public();
 ```
 
 ## Manual Path

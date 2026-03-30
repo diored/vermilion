@@ -12,7 +12,7 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>15.0.0-preview.6</Version>
+    <Version>15.0.0-preview.7</Version>
     <PackageId>DioRed.Vermilion.Core</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
@@ -33,7 +33,7 @@
 
   <ItemGroup>
     <PackageReference Include="DioRed.Common.Jobs" Version="2.0.1" />
-    <PackageReference Include="DioRed.Vermilion.Abstractions" Version="15.0.0-preview.6" />
+    <PackageReference Include="DioRed.Vermilion.Abstractions" Version="15.0.0-preview.7" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />

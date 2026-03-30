@@ -25,7 +25,7 @@ public class BotCoreBuilder
 
     private BotOptions? _options;
     private IChatStorage? _chatStorage;
-    private ClientsPolicy _clientsPolicy = ClientsPolicy.All;
+    private BotVisibility? _visibility;
 
     internal BotCoreBuilder(
         IServiceProvider services
@@ -218,37 +218,50 @@ public class BotCoreBuilder
         => ConfigureChatStorage(configure);
 
     /// <summary>
-    /// Configures the outgoing clients policy used by the bot.
+    /// Configures the bot visibility rules used by the bot runtime.
     /// </summary>
-    public BotCoreBuilder ConfigureClientsPolicy(Action<ClientPolicyBuilder> configure)
+    public BotCoreBuilder ConfigureVisibility(Action<BotVisibilityBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
 
-        ClientPolicyBuilder builder = new();
+        BotVisibilityBuilder builder = new();
         configure(builder);
 
-        _clientsPolicy = builder.Build();
+        _visibility = builder.Build();
 
         return this;
     }
 
     /// <summary>
-    /// Allows outgoing messages only for the specified chats.
+    /// Legacy alias preserved for migration from older Vermilion versions.
     /// </summary>
-    public BotCoreBuilder AllowFor(params IEnumerable<ChatId> chatIds)
-        => ConfigureClientsPolicy(c => c.AllowFor(chatIds));
+    [Obsolete("Use ConfigureVisibility or PrivateTo instead.")]
+    public BotCoreBuilder ConfigureClientsPolicy(Action<ClientPolicyBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        ClientPolicyBuilder builder = new();
+        configure(builder);
+        _visibility = builder.Build();
+        return this;
+    }
 
     /// <summary>
-    /// Allows outgoing messages only for chats that satisfy the specified condition.
+    /// Makes the bot public for every chat.
     /// </summary>
-    public BotCoreBuilder AllowFor(Func<ChatId, bool> condition)
-        => ConfigureClientsPolicy(c => c.AllowFor(condition));
+    public BotCoreBuilder Public()
+        => ConfigureVisibility(v => v.Public());
 
     /// <summary>
-    /// Allows outgoing messages for every chat.
+    /// Makes the bot visible only to the specified chats.
     /// </summary>
-    public BotCoreBuilder AllowForEveryone()
-        => ConfigureClientsPolicy(c => c.AllowForEveryone());
+    public BotCoreBuilder PrivateTo(params IEnumerable<ChatId> chatIds)
+        => ConfigureVisibility(v => v.PrivateTo(chatIds));
+
+    /// <summary>
+    /// Makes the bot visible only to chats that satisfy the specified condition.
+    /// </summary>
+    public BotCoreBuilder PrivateTo(Func<ChatId, bool> condition)
+        => ConfigureVisibility(v => v.PrivateTo(condition));
 
     /// <summary>
     /// Configures bot options using a delegate.
@@ -303,13 +316,20 @@ public class BotCoreBuilder
             );
         }
 
+        if (_visibility is null)
+        {
+            _botCoreLogger.LogWarning(
+                "Bot visibility was not configured explicitly. Defaulting to public visibility for all chats."
+            );
+        }
+
         BotCoreSettings settings = new()
         {
             ChatStorage = _chatStorage!,
             Connectors = _connectors,
             CommandHandlers = _commandHandlers,
             Options = _options ?? ReadBotOptions(),
-            ClientsPolicy = _clientsPolicy,
+            Visibility = _visibility ?? BotVisibility.Public,
         };
 
         BotCore botCore = new(settings, _botCoreLogger);
@@ -329,7 +349,7 @@ public class BotCoreBuilder
             };
 
             Job job = new(
-                action: ct => scheduled.Handle(Services, botCore, ct),
+                action: ct => scheduled.HandleAsync(Services, botCore, ct),
                 schedule: def.Schedule,
                 options: options
             );

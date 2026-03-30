@@ -18,6 +18,6 @@ public interface IDailyJob : IScheduledJob
 
     ScheduledJobDefinition IScheduledJob.Definition => Definition.ToScheduledJobDefinition();
 
-    Task IScheduledJob.Handle(IServiceProvider services, BotCore botCore, CancellationToken ct)
+    Task IScheduledJob.HandleAsync(IServiceProvider services, BotCore botCore, CancellationToken ct)
         => Handle(services, botCore);
 }

@@ -77,8 +77,19 @@ public sealed class VermilionBuilder
         => ConfigureScheduledJobs(configure);
 
     /// <summary>
-    /// Configures the clients policy used by Vermilion.
+    /// Configures the bot visibility used by Vermilion.
     /// </summary>
+    public VermilionBuilder ConfigureVisibility(Action<BotVisibilityBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        BotCoreConfigurators.Add(b => b.ConfigureVisibility(configure));
+        return this;
+    }
+
+    /// <summary>
+    /// Legacy alias preserved for migration from older Vermilion versions.
+    /// </summary>
+    [Obsolete("Use ConfigureVisibility instead.")]
     public VermilionBuilder ConfigureClientsPolicy(Action<ClientPolicyBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -131,20 +142,21 @@ public sealed class VermilionBuilder
         => ConfigureScheduledJobs(c => c.LoadFromAssembly(assembly));
 
     /// <summary>
-    /// Allows outgoing messages only for the specified chats.
+    /// Makes the bot public for every chat.
     /// </summary>
-    public VermilionBuilder AllowFor(params IEnumerable<ChatId> chatIds)
-        => ConfigureClientsPolicy(c => c.AllowFor(chatIds));
+    public VermilionBuilder Public()
+        => ConfigureVisibility(v => v.Public());
 
     /// <summary>
-    /// Allows outgoing messages only for chats that satisfy the specified condition.
+    /// Makes the bot visible only to the specified chats.
     /// </summary>
-    public VermilionBuilder AllowFor(Func<ChatId, bool> condition)
-        => ConfigureClientsPolicy(c => c.AllowFor(condition));
+    public VermilionBuilder PrivateTo(params IEnumerable<ChatId> chatIds)
+        => ConfigureVisibility(v => v.PrivateTo(chatIds));
 
     /// <summary>
-    /// Allows outgoing messages for every chat.
+    /// Makes the bot visible only to chats that satisfy the specified condition.
     /// </summary>
-    public VermilionBuilder AllowForEveryone()
-        => ConfigureClientsPolicy(c => c.AllowForEveryone());
+    public VermilionBuilder PrivateTo(Func<ChatId, bool> condition)
+        => ConfigureVisibility(v => v.PrivateTo(condition));
+
 }

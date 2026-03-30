@@ -13,5 +13,12 @@ public interface IScheduledJob
     /// <summary>
     /// Executes the scheduled job.
     /// </summary>
-    Task Handle(IServiceProvider services, BotCore botCore, CancellationToken ct);
+    Task HandleAsync(IServiceProvider services, BotCore botCore, CancellationToken ct)
+        => Handle(services, botCore, ct);
+
+    /// <summary>
+    /// Legacy alias preserved for migration from older Vermilion versions.
+    /// </summary>
+    Task Handle(IServiceProvider services, BotCore botCore, CancellationToken ct)
+        => throw new NotSupportedException("Implement HandleAsync instead.");
 }

@@ -32,5 +32,5 @@ Typical extensions in this mode:
 
 ```csharp
 v.ConfigureScheduledJobs(j => j.LoadFromEntryAssembly());
-v.ConfigureClientsPolicy(p => p.AllowForEveryone());
+v.Public();
 ```

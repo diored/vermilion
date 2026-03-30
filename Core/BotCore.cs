@@ -27,7 +27,7 @@ public class BotCore : IHostedService
     private readonly CommandHandlersManager _commandHandlers;
     private readonly ChatClientsManager _chatClientsManager;
     private readonly BotOptions _options;
-    private readonly ClientsPolicy _clientsPolicy;
+    private readonly BotVisibility _visibility;
     private readonly ILogger<BotCore> _logger;
     private BlockingCollection<MessagePostedEventArgs>? _incomingMessages;
     private Task? _messagePumpTask;
@@ -51,7 +51,7 @@ public class BotCore : IHostedService
         _commandHandlers = new CommandHandlersManager(settings.CommandHandlers);
         _chatClientsManager = settings.ChatClientsManager;
         _options = settings.Options;
-        _clientsPolicy = settings.ClientsPolicy;
+        _visibility = settings.Visibility;
 
         _logger = logger;
     }
@@ -98,7 +98,7 @@ public class BotCore : IHostedService
             );
         }
 
-        if (settings.ClientsPolicy is null)
+        if (settings.Visibility is null)
         {
             throw new ArgumentException(
                 ExceptionMessages.ClientsPolicyShouldBeInitialized_0,
@@ -616,7 +616,7 @@ public class BotCore : IHostedService
                 command,
                 hasTail: tail is not null,
                 senderRole: args.SenderRole,
-                clientIsEligible: _clientsPolicy.IsEligible(args.ChatId)
+                clientIsEligible: _visibility.IsVisibleFor(args.ChatId)
             );
 
             if (handlers.Length == 0)

@@ -173,7 +173,7 @@ internal class GoodMorningDailyJob : IScheduledJob
         Schedule = new LocalTimeDailySchedule(new TimeOnly(7, 40, 0))
     };
 
-    public async Task Handle(IServiceProvider services, BotCore botCore, CancellationToken ct)
+    public async Task HandleAsync(IServiceProvider services, BotCore botCore, CancellationToken ct)
     {
         // ...
     }
@@ -184,7 +184,7 @@ Compatibility notes:
 
 - `IDailyJob` and `DailyJobDefinition` are available again in `v15` as obsolete compatibility APIs
 - old `DailyJobDefinition.TimeOfDay` is mapped to `LocalTimeDailySchedule`
-- old `IDailyJob.Handle(IServiceProvider, BotCore)` still works, but new code should accept `CancellationToken ct`
+- old `IDailyJob.Handle(IServiceProvider, BotCore)` still works, but new code should implement `HandleAsync(..., CancellationToken ct)`
 - for new development, prefer `IScheduledJob` directly
 
 ## ChatMetadata
