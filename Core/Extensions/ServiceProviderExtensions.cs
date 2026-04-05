@@ -71,7 +71,7 @@ public static class ServiceProviderExtensions
             """Next occurrence (#{OccurrenceNumber}) of the job "{JobId}" is scheduled at {NextOccurrence} (in {TimeLeft})""",
             e.OccurrenceNumber,
             jobId,
-            e.NextOccurrence.ToString("u"),
+            FormatInTimeZone(e.NextOccurrence, timeZone),
             (e.NextOccurrence - DateTimeOffset.Now).ToString("c")
         );
 
@@ -113,5 +113,11 @@ public static class ServiceProviderExtensions
         {
             logger.LogError(ex, """Job "{JobId}" crashed in RunJob wrapper""", job.Id);
         }
+    }
+
+    private static string FormatInTimeZone(DateTimeOffset value, TimeZoneInfo timeZone)
+    {
+        DateTimeOffset local = TimeZoneInfo.ConvertTime(value, timeZone);
+        return $"{local:yyyy-MM-dd HH:mm:ss zzz} ({timeZone.Id})";
     }
 }

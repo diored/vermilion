@@ -376,7 +376,7 @@ public class BotCoreBuilder
                 """Next occurrence (#{OccurrenceNumber}) of the job "{JobId}" is scheduled at {NextOccurrence} (in {TimeLeft})""",
                 e.OccurrenceNumber,
                 jobId,
-                e.NextOccurrence.ToString("u"),
+                FormatScheduledOccurrence(def.Schedule, e.NextOccurrence),
                 (e.NextOccurrence - DateTimeOffset.Now).ToString("c")
             );
 
@@ -435,5 +435,29 @@ public class BotCoreBuilder
             SaveChatTitles = section.GetValue<bool?>("SaveChatTitles") ?? true,
             ShowCoreVersion = section.GetValue<bool?>("ShowCoreVersion") ?? true
         };
+    }
+
+    private static string FormatScheduledOccurrence(ISchedule schedule, DateTimeOffset nextOccurrence)
+    {
+        return TryGetScheduleTimeZone(schedule) is { } timeZone
+            ? FormatInTimeZone(nextOccurrence, timeZone)
+            : nextOccurrence.ToString("u");
+    }
+
+    private static TimeZoneInfo? TryGetScheduleTimeZone(ISchedule schedule)
+    {
+        return schedule switch
+        {
+            CronSchedule cron => cron.TimeZone,
+            DailySchedule daily => daily.TimeZone,
+            LocalTimeDailySchedule localDaily => localDaily.TimeZone,
+            _ => null
+        };
+    }
+
+    private static string FormatInTimeZone(DateTimeOffset value, TimeZoneInfo timeZone)
+    {
+        DateTimeOffset local = TimeZoneInfo.ConvertTime(value, timeZone);
+        return $"{local:yyyy-MM-dd HH:mm:ss zzz} ({timeZone.Id})";
     }
 }
