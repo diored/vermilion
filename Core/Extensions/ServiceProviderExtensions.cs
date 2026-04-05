@@ -1,5 +1,4 @@
 using DioRed.Common.Jobs;
-using DioRed.Vermilion.Extensions;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,7 +18,7 @@ public static class ServiceProviderExtensions
         this IServiceProvider services,
         Func<IServiceProvider, BotCore, CancellationToken, Task> action,
         TimeOnly timeOfDay,
-        TimeSpan timeZoneOffset,
+        TimeZoneInfo timeZone,
         int? maxOccurrences = null,
         string? id = null
     )
@@ -29,7 +28,7 @@ public static class ServiceProviderExtensions
 
         DailySchedule schedule = new(
             timeOfDay: timeOfDay.ToTimeSpan(),
-            timeZoneOffset: timeZoneOffset
+            timeZone: timeZone
         );
 
         JobOptions options = new()

@@ -52,6 +52,8 @@ See also: [MIGRATION.md](./MIGRATION.md)
 - `ICommandHandler.HandleAsync(...)` now accepts `CancellationToken ct = default`
 - storage providers now throw typed Vermilion exceptions instead of relying on generic `ArgumentException` / `InvalidOperationException` for common storage cases
 - hosting helpers were updated to the new cancellation-aware handler model
+- scheduled jobs now use `IScheduledJob.HandleAsync(...)` as the primary async contract
+- visibility configuration was renamed from `ClientsPolicy` to `Visibility` / `BotVisibility`, with hosting APIs moving toward `ConfigureVisibility(...)`, `Public()`, and `PrivateTo(...)`
 
 ## 14.0.0
 
