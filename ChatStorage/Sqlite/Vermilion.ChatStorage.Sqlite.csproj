@@ -12,7 +12,7 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>15.0.0-preview.8</Version>
+    <Version>15.0.0</Version>
     <PackageId>DioRed.Vermilion.ChatStorage.Sqlite</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
@@ -33,7 +33,7 @@
 
   <ItemGroup>
     <PackageReference Include="DioRed.Common.ConfigurationExtensions" Version="0.4.0" />
-    <PackageReference Include="DioRed.Vermilion.Abstractions" Version="15.0.0-preview.8" />
+    <PackageReference Include="DioRed.Vermilion.Abstractions" Version="15.0.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />

@@ -13,7 +13,7 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>15.0.0-preview.8</Version>
+    <Version>15.0.0</Version>
     <PackageId>DioRed.Vermilion.Abstractions</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>

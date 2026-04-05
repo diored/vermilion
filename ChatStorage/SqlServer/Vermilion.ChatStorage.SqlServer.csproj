@@ -13,7 +13,7 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
     <PackageId>DioRed.Vermilion.ChatStorage.SqlServer</PackageId>
-    <Version>15.0.0-preview.8</Version>
+    <Version>15.0.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -34,7 +34,7 @@
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.72" />
     <PackageReference Include="DioRed.Common.ConfigurationExtensions" Version="0.4.0" />
-    <PackageReference Include="DioRed.Vermilion.Abstractions" Version="15.0.0-preview.8" />
+    <PackageReference Include="DioRed.Vermilion.Abstractions" Version="15.0.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
   </ItemGroup>
 
