@@ -8,6 +8,8 @@ See also: [MIGRATION.md](./MIGRATION.md)
 - **Chat storages**:
   - new `DioRed.Vermilion.ChatStorage.Sqlite` package
   - new `DioRed.Vermilion.ChatStorage.MongoDb` package
+- **Tools**:
+  - new `DioRed.Vermilion.Tools` package with a chat storage migration CLI
 - **Examples**:
   - `examples/QuickStart.Telegram.Sqlite`
   - `examples/QuickStart.Telegram.MongoDb`

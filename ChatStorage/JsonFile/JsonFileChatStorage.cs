@@ -5,7 +5,7 @@ namespace DioRed.Vermilion.ChatStorage;
 /// <summary>
 /// Persists chat metadata to a JSON file on disk.
 /// </summary>
-public sealed class JsonFileChatStorage : IChatStorage
+public sealed class JsonFileChatStorage : IChatStorage, IChatStorageExport
 {
     private readonly string _filePath;
     private readonly JsonSerializerOptions _jsonOptions;
@@ -95,6 +95,27 @@ public sealed class JsonFileChatStorage : IChatStorage
             {
                 ct.ThrowIfCancellationRequested();
                 yield return chat;
+            }
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<StoredChatRecord> ExportChatsAsync(
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default
+    )
+    {
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await EnsureLoadedAsync(ct).ConfigureAwait(false);
+            foreach (StoredChat chat in _chats.Values.ToArray())
+            {
+                ct.ThrowIfCancellationRequested();
+                yield return chat.ToStoredChatRecord();
             }
         }
         finally
@@ -220,6 +241,15 @@ public sealed class JsonFileChatStorage : IChatStorage
             {
                 ChatId = ChatId,
                 Tags = [.. Tags]
+            };
+        }
+
+        public StoredChatRecord ToStoredChatRecord()
+        {
+            return new StoredChatRecord
+            {
+                Metadata = ToMetadata(),
+                Title = Title
             };
         }
     }

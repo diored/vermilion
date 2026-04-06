@@ -8,7 +8,7 @@ namespace DioRed.Vermilion.ChatStorage;
 /// <summary>
 /// Persists chat metadata in a SQLite database.
 /// </summary>
-public class SqliteChatStorage : IChatStorage
+public class SqliteChatStorage : IChatStorage, IChatStorageExport
 {
     private const string StorageId = "SqliteChatStorage";
     private const int CurrentSchemaVersion = 2;
@@ -119,6 +119,30 @@ public class SqliteChatStorage : IChatStorage
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
         {
             yield return BuildEntity(reader);
+        }
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<StoredChatRecord> ExportChatsAsync(
+        [EnumeratorCancellation] CancellationToken ct = default
+    )
+    {
+        await EnsureSchemaUpToDateAsync().ConfigureAwait(false);
+        await using SqliteConnection connection = new(_connectionString);
+        await connection.OpenAsync(ct).ConfigureAwait(false);
+
+        await using SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            SELECT [System], [Type], [Id], [Title], [Tags]
+            FROM [{_tableName}];
+            """;
+
+        await using SqliteDataReader reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            yield return BuildStoredChatRecord(reader);
         }
     }
 
@@ -368,6 +392,23 @@ public class SqliteChatStorage : IChatStorage
                 reader.GetInt64(2)
             ),
             Tags = [.. ParseTagsFromString(reader.IsDBNull(3) ? null : reader.GetString(3))]
+        };
+    }
+
+    private static StoredChatRecord BuildStoredChatRecord(SqliteDataReader reader)
+    {
+        return new StoredChatRecord
+        {
+            Metadata = new ChatMetadata
+            {
+                ChatId = new ChatId(
+                    reader.GetString(0),
+                    reader.GetString(1),
+                    reader.GetInt64(2)
+                ),
+                Tags = [.. ParseTagsFromString(reader.IsDBNull(4) ? null : reader.GetString(4))]
+            },
+            Title = reader.IsDBNull(3) ? null : reader.GetString(3)
         };
     }
 

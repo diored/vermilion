@@ -11,7 +11,7 @@ namespace DioRed.Vermilion.ChatStorage;
 /// <summary>
 /// Persists chat metadata in SQL Server.
 /// </summary>
-public partial class SqlServerChatStorage : IChatStorage
+public partial class SqlServerChatStorage : IChatStorage, IChatStorageExport
 {
     private const string StorageId = "SqlServerChatStorage";
     private const int CurrentSchemaVersion = 2;
@@ -138,6 +138,30 @@ public partial class SqlServerChatStorage : IChatStorage
         {
             ct.ThrowIfCancellationRequested();
             yield return BuildEntity(dto);
+        }
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<StoredChatRecord> ExportChatsAsync(
+        [EnumeratorCancellation] CancellationToken ct = default
+    )
+    {
+        await using SqlConnection db = new(_connectionString);
+
+        await EnsureSchemaUpToDateAsync().ConfigureAwait(false);
+
+        IEnumerable<StoredChatDto> dtos = await db.QueryAsync<StoredChatDto>(new CommandDefinition(
+            $"""
+            SELECT [System], [Id], [Type], [Title], [Tags]
+            FROM [{_schema}].[{_tableName}]
+            """,
+            cancellationToken: ct
+        )).ConfigureAwait(false);
+
+        foreach (StoredChatDto dto in dtos)
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return BuildStoredChatRecord(dto);
         }
     }
 
@@ -409,8 +433,27 @@ public partial class SqlServerChatStorage : IChatStorage
         };
     }
 
+    private static StoredChatRecord BuildStoredChatRecord(StoredChatDto dto)
+    {
+        return new StoredChatRecord
+        {
+            Metadata = new ChatMetadata
+            {
+                ChatId = new ChatId
+                {
+                    ConnectorKey = dto.System,
+                    Id = dto.Id,
+                    Type = dto.Type
+                },
+                Tags = [.. ParseTagsFromString(dto.Tags)]
+            },
+            Title = dto.Title
+        };
+    }
+
     [GeneratedRegex("""(?:\w+\.)?\w+""")]
     private static partial Regex SimpleIdentifierRegex();
 
     private record ChatInfoDto(string System, long Id, string Type, string? Tags);
+    private record StoredChatDto(string System, long Id, string Type, string? Title, string? Tags);
 }

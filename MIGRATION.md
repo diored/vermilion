@@ -296,4 +296,4 @@ Before publishing or shipping your upgrade:
 4. Replace `GetChatsAsync()` array assumptions with async streaming.
 5. Replace in-place `ChatMetadata.Tags` mutation with `WithTag(...)`, `WithoutTag(...)`, `WithTags(...)`, or `WithoutTags(...)`.
 6. Update exception handling to use typed Vermilion exceptions.
-7. Run your unit and integration tests against the `ProjectRefs` solution first.
+7. Run your unit and integration tests against the solution and test projects before publishing.

@@ -12,7 +12,7 @@ namespace DioRed.Vermilion.ChatStorage;
 /// <summary>
 /// Persists chat metadata in Azure Table Storage.
 /// </summary>
-public class AzureTableChatStorage : IChatStorage
+public class AzureTableChatStorage : IChatStorage, IChatStorageExport
 {
     private const int CurrentSchemaVersion = 2;
     private const string SchemaPartitionKey = "__vermilion__";
@@ -87,6 +87,24 @@ public class AzureTableChatStorage : IChatStorage
             }
 
             yield return BuildEntity(entity);
+        }
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<StoredChatRecord> ExportChatsAsync(
+        [EnumeratorCancellation] CancellationToken ct = default
+    )
+    {
+        await EnsureSchemaUpToDateAsync().ConfigureAwait(false);
+
+        await foreach (var entity in _tableClient.QueryAsync<ChatTableEntity>(cancellationToken: ct))
+        {
+            if (entity.PartitionKey == SchemaPartitionKey)
+            {
+                continue;
+            }
+
+            yield return BuildStoredChatRecord(entity);
         }
     }
 
@@ -179,6 +197,15 @@ public class AzureTableChatStorage : IChatStorage
                 Type = typeFromKey,
             },
             Tags = [.. ParseTagsFromString(entity.Tags)]
+        };
+    }
+
+    private static StoredChatRecord BuildStoredChatRecord(ChatTableEntity entity)
+    {
+        return new StoredChatRecord
+        {
+            Metadata = BuildEntity(entity),
+            Title = entity.Title
         };
     }
 

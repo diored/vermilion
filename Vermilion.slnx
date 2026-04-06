@@ -15,6 +15,13 @@
   <Folder Name="/Connectors/">
     <Project Path="Connectors/Telegram/Vermilion.Connectors.Telegram.csproj" />
   </Folder>
+  <Folder Name="/Tools/">
+    <Project Path="Tools/ChatStorageMigrator/Vermilion.Tools.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/ChatStorage/Vermilion.ChatStorage.Tests.csproj" />
+    <Project Path="Tests/Integration/Vermilion.ChatStorage.IntegrationTests.csproj" />
+  </Folder>
   <Folder Name="/examples/">
     <Project Path="examples/QuickStart.Telegram.AzureTable/QuickStart.Telegram.AzureTable.csproj">
       <BuildType Solution="DebugEngine|*" Project="Debug" />

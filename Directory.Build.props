@@ -1,9 +1,0 @@
-<Project>
-
-  <PropertyGroup Condition="$([System.String]::Copy('$(MSBuildProjectFile)').Contains('.ProjectRefs.'))">
-    <BaseIntermediateOutputPath>obj\ProjectRefs\</BaseIntermediateOutputPath>
-    <BaseOutputPath>bin\ProjectRefs\</BaseOutputPath>
-    <DefaultItemExcludes>$(DefaultItemExcludes);bin\**;obj\**</DefaultItemExcludes>
-  </PropertyGroup>
-
-</Project>

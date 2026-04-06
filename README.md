@@ -157,6 +157,12 @@ A complete runnable sample lives in [examples/QuickStart.Telegram.InMemory.Manua
 
 If you want to implement your own connector or chat storage, reference `DioRed.Vermilion.Abstractions`.
 
+## Tools
+
+If you need to move chats from one storage provider to another, use the one-off migration utility in [Tools/ChatStorageMigrator](/D:/bots/vermilion/Tools/ChatStorageMigrator).
+It copies chats from source to target only when the target storage is empty, so migration stays deterministic and does not need conflict resolution.
+The packaged CLI is published as `DioRed.Vermilion.Tools`.
+
 ## Upgrade notes
 
 If you are upgrading from `v14` to `v15`, see [MIGRATION.md](./MIGRATION.md).

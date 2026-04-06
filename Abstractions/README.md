@@ -14,6 +14,7 @@ In `v15`, the contracts are cancellation-aware by default:
 - `ChatMetadata` is immutable and represents runtime chat state only
 - `ChatMetadata` exposes convenience helpers such as `HasTag`, `WithTag`, and `WithoutTag`
 - `IChatStorage` has convenience extensions such as `GetChatsArrayAsync()`
+- storage migration can use `IChatStorageExport` and `ChatStorageMigrator`
 - storage-only fields such as chat titles stay outside `ChatMetadata`
 
 Use it when you want to implement a **custom connector** or **custom chat storage** without taking a dependency on the full Vermilion engine.

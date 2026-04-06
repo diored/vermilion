@@ -29,3 +29,6 @@ Storage implementations in v15 use:
 - streamed `GetChatsAsync(...)`
 - immutable `ChatMetadata`
 - typed exceptions for common storage errors
+
+For one-off storage moves, Vermilion also includes a migration utility in [Tools/ChatStorageMigrator](/D:/bots/vermilion/Tools/ChatStorageMigrator).
+It requires the target storage to be empty before migration starts.

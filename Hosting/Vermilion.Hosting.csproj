@@ -12,7 +12,7 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>DioRED</Authors>
-    <Version>15.0.0</Version>
+    <Version>15.1.0</Version>
     <PackageId>DioRed.Vermilion.Hosting</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>packageIcon.png</PackageIcon>
@@ -34,8 +34,11 @@
   <ItemGroup>
     <PackageReference Include="DioRed.Common.ConfigurationExtensions" Version="0.4.0" />
     <PackageReference Include="DioRed.Common.Logging" Version="4.7.2" />
-    <PackageReference Include="DioRed.Vermilion.Core" Version="15.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Vermilion.Core.csproj" />
   </ItemGroup>
 
 </Project>

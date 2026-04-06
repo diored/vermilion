@@ -11,6 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DioRed.Vermilion" Version="15.0.0" />
+    <ProjectReference Include="..\..\Complete\Vermilion.Complete.csproj" />
   </ItemGroup>
 </Project>

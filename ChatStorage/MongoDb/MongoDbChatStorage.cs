@@ -7,7 +7,7 @@ namespace DioRed.Vermilion.ChatStorage;
 /// <summary>
 /// Persists chat metadata in MongoDB.
 /// </summary>
-public class MongoDbChatStorage : IChatStorage
+public class MongoDbChatStorage : IChatStorage, IChatStorageExport
 {
     private const string SchemaCollectionName = "__VermilionSchemaVersions";
     private const string StorageId = "MongoDbChatStorage";
@@ -99,6 +99,27 @@ public class MongoDbChatStorage : IChatStorage
             {
                 ct.ThrowIfCancellationRequested();
                 yield return document.ToMetadata();
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<StoredChatRecord> ExportChatsAsync(
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default
+    )
+    {
+        await EnsureSchemaUpToDateAsync().ConfigureAwait(false);
+
+        using IAsyncCursor<ChatDocument> cursor = await _collection.Find(FilterDefinition<ChatDocument>.Empty)
+            .ToCursorAsync(ct)
+            .ConfigureAwait(false);
+
+        while (await cursor.MoveNextAsync(ct).ConfigureAwait(false))
+        {
+            foreach (ChatDocument document in cursor.Current)
+            {
+                ct.ThrowIfCancellationRequested();
+                yield return document.ToStoredChatRecord();
             }
         }
     }
@@ -239,6 +260,15 @@ public class MongoDbChatStorage : IChatStorage
             {
                 ChatId = new ChatId(System, Type, Id),
                 Tags = [.. Tags]
+            };
+        }
+
+        public StoredChatRecord ToStoredChatRecord()
+        {
+            return new StoredChatRecord
+            {
+                Metadata = ToMetadata(),
+                Title = Title
             };
         }
     }
